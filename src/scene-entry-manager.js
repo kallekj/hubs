@@ -53,42 +53,40 @@ export default class SceneEntryManager {
   loadAssetFromURL = (url, position) => {
     var el = document.createElement("a-entity");
     AFRAME.scenes[0].appendChild(el);
-    console.log("TEST");
     el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
     el.setAttribute("networked", { template: "#interactable-media" });
     el.setAttribute("position", position);
     return el;
   };
 
-  spawnDesk_Top = (url, position, newId) => {
+  spawnDesks = url => {
     // Spawn the desk and position it
-    var newDesk = this.loadAssetFromURL(url, position);
-
-    //Make it not movable by mouse
-    // newDesk.removeAttribute("draggable");
-    // newDesk.removeAttribute("hoverable-visuals");
-    // newDesk.removeAttribute("is-remote-hover-target");
-
-    var current_objects = AFRAME.scenes[0].querySelectorAll("[id]");
-    for (let current_object of current_objects) {
-      if (current_object.id == newId) {
-        console.log("CAN'T HAVE TWO OBJECTS WITH SAME ID");
-        newDesk.remove();
-        return null;
+    var g = AFRAME.scenes[0].querySelectorAll("[class]");
+    var deskGroups = [];
+    for (let e of g) {
+      if (e.className.substring(0, 10) == "Desk_Group") {
+        deskGroups.push(e);
       }
     }
-    newDesk.id = newId;
-
-    (async () => {
-      while (newDesk.hasLoaded == false) {
-        await nextTick();
+    var desks = [];
+    var targets = [];
+    for (let deskGroup of deskGroups) {
+      for (let deskGroupChild of deskGroup.object3D.children) {
+        if (deskGroupChild.name.substring(0, deskGroupChild.name.length - 2) == "Invisible_Desk") {
+          var newDeskPosition = Object.assign({}, deskGroupChild.el.object3D.getWorldPosition());
+          // Offset Z- coordinate by small bit to make it blend well
+          //newDeskPosition.z = newDeskPosition.z - 0.01
+          var newDeskRotation = Object.assign({}, deskGroupChild.el.object3D.rotation);
+          var newDesk = this.loadAssetFromURL(url, newDeskPosition, newDeskRotation);
+          targets.push(deskGroupChild);
+          desks.push(newDesk);
+        }
       }
-      newDesk.removeAttribute("draggable");
-      newDesk.removeAttribute("hoverable-visuals");
-      newDesk.removeAttribute("is-remote-hover-target");
-    })();
-
-    return newDesk;
+    }
+    for (var i = 0; i < desks.length; i++) {
+      desks[i].object3D.setRotationFromQuaternion(targets[i].el.object3D.getWorldQuaternion());
+    }
+    return desks;
   };
 
   enterScene = async (mediaStream, enterInVR, muteOnEntry) => {
@@ -167,10 +165,23 @@ export default class SceneEntryManager {
       this.scene.emit("action_mute");
     }
 
-    var deskUrl = "https://uploads-prod.reticulum.io/files/37c0c4b2-6689-4a81-9022-2db4b55bcb93.glb";
-    var newID = "TESTDESK_1";
-    var floaty_objects = AFRAME.scenes[0].querySelectorAll("[id]");
-    var desk = this.spawnDesk_Top(deskUrl, "1 1 3", newID);
+    var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
+    var spawnedDesks = this.spawnDesks(deskUrl);
+
+    for (let desk of spawnedDesks) {
+      (async () => {
+        while (desk.hasLoaded == false) {
+          await nextTick();
+        }
+        //newDesk.setAttribute("position", deskGroupChild.el.object3D.getWorldPosition());
+        desk.removeAttribute("draggable");
+        desk.removeAttribute("hoverable-visuals");
+        desk.removeAttribute("is-remote-hover-target");
+        desk.object3D.translateZ(-0.01);
+      })();
+    }
+
+    //var desk = this.spawnDesk_Top(deskUrl, "1 1 3", newID);
   };
 
   whenSceneLoaded = callback => {
@@ -662,3 +673,29 @@ export default class SceneEntryManager {
     audioEl.play();
   };
 }
+// //Make it not movable by mouse
+//     // newDesk.removeAttribute("draggable");
+//     // newDesk.removeAttribute("hoverable-visuals");
+//     // newDesk.removeAttribute("is-remote-hover-target");
+
+//     var current_objects = AFRAME.scenes[0].querySelectorAll("[id]");
+//     for (let current_object of current_objects) {
+//       if (current_object.id == newId) {
+//         console.log("CAN'T HAVE TWO OBJECTS WITH SAME ID");
+//         newDesk.remove();
+//         return null;
+//       }
+//     }
+//     newDesk.id = newId;
+
+//     (async () => {
+//       while (newDesk.hasLoaded == false) {
+//         await nextTick();
+//       }
+
+//       newDesk.removeAttribute("draggable");
+//       newDesk.removeAttribute("hoverable-visuals");
+//       newDesk.removeAttribute("is-remote-hover-target");
+//     })();
+
+//     return newDesk;

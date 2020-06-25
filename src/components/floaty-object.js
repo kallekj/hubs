@@ -29,15 +29,14 @@ AFRAME.registerComponent("floaty-object", {
   },
   snap(toSnap, snapOn) {
     // Align rotation
-    toSnap.el.object3D.rotation.copy(snapOn.object3D.rotation);
+    toSnap.el.object3D.setRotationFromQuaternion(snapOn.object3D.getWorldQuaternion()); //.rotation.copy(snapOn.object3D.);
     // Align position
-    toSnap.el.object3D.position.copy(snapOn.object3D.position);
+    toSnap.el.object3D.position.copy(snapOn.object3D.getWorldPosition());
     // Set to same scale
-    toSnap.el.object3D.scale.copy(snapOn.object3D.scale);
+    toSnap.el.object3D.scale.copy(snapOn.object3D.getWorldScale());
     // Move slightly to avoid texture tearing
-    toSnap.el.object3D.translateZ(0.005);
+    toSnap.el.object3D.translateZ(0.002);
   },
-
   tick() {
     if (!this.bodyHelper) {
       this.bodyHelper = this.el.components["body-helper"];
@@ -51,22 +50,21 @@ AFRAME.registerComponent("floaty-object", {
 
     if (this.wasHeld && !isHeld) {
       this.onRelease();
-
       // Custom code for snapping videos
       // Check that the object is a video loader.
       if (this.el.getAttribute("media-video") != null) {
         // Load the objects which can be snapped on
-        g = AFRAME.scenes[0].querySelectorAll("[media-loader]");
-        i = 0;
-        for (i = 0; i < g.length; i++) {
+        media_loaders = AFRAME.scenes[0].querySelectorAll("[media-loader]");
+        var i = 0;
+        for (i = 0; i < media_loaders.length; i++) {
           // If the object to snap onto has a 3D object
-          if (g[i].object3D != null) {
+          if (media_loaders[i].object3D != null) {
             // Check if object is of the desired type
-            if (g[i].object3D.name.substring(0, 5) == "Image") {
+            if (media_loaders[i].object3D.name.substring(0, 5) == "Image") {
               // If close enough to an object
-              if (this.el.object3D.position.distanceTo(g[i].object3D.position) < 0.5) {
+              if (this.el.object3D.getWorldPosition().distanceTo(media_loaders[i].object3D.getWorldPosition()) < 0.5) {
                 // Snap onto it
-                this.snap(this, g[i]);
+                this.snap(this, media_loaders[i]);
                 break;
               }
             }
