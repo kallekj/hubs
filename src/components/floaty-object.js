@@ -92,10 +92,24 @@ AFRAME.registerComponent("floaty-object", {
         this._makeStaticWhenAtRest = false;
       }
     }
-
+    //-------------------CUSTOM------------------------
     this.wasHeld = isHeld;
-
-    //snappableContentEl = getFirstElementFromHash(snappableContentHash);
+    const userinput = AFRAME.scenes[0].systems.userinput;
+    if (userinput.get("/actions/raiseNearestDesk")) {
+      if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
+        if (this.el.object3D.getWorldPosition().y < 1.82) {
+          this.el.object3D.translateY(0.01);
+        }
+      }
+    }
+    if (userinput.get("/actions/lowerNearestDesk")) {
+      if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
+        if (this.el.object3D.getWorldPosition().y > 0.74) {
+          this.el.object3D.translateY(-0.01);
+        }
+      }
+    }
+    //---------------------------------------------------
   },
 
   play() {

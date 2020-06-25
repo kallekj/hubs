@@ -85,6 +85,7 @@ export default class SceneEntryManager {
     }
     for (var i = 0; i < desks.length; i++) {
       desks[i].object3D.setRotationFromQuaternion(targets[i].el.object3D.getWorldQuaternion());
+      desks[i].object3D.name = "Interactive_Desk_".concat(i);
     }
     return desks;
   };
