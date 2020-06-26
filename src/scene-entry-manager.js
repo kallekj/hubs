@@ -167,30 +167,42 @@ export default class SceneEntryManager {
     }
 
     var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
-    var spawnedDesks = this.spawnDesks(deskUrl);
 
-    var g = AFRAME.scenes[0].querySelectorAll("[class]");
-    var invisible_desks = [];
-    for (let e of g) {
-      if (e.object3D != null) {
-        if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
-          invisible_desks.push(e);
-        }
+    var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
+    var desksSpawned = false;
+
+    for (let floaty_object of floaty_objects) {
+      if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
+        desksSpawned = true;
+        break;
       }
     }
-    
-    for (let desk of spawnedDesks) {
-      (async () => {
-        while (desk.hasLoaded == false) {
-          await nextTick();
+
+    if (!desksSpawned) {
+      var spawnedDesks = this.spawnDesks(deskUrl);
+      var g = AFRAME.scenes[0].querySelectorAll("[class]");
+      var invisible_desks = [];
+      for (let e of g) {
+        if (e.object3D != null) {
+          if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
+            invisible_desks.push(e);
+          }
         }
-        desk.removeAttribute("draggable");
-        desk.removeAttribute("hoverable-visuals");
-        desk.removeAttribute("is-remote-hover-target");
-        desk.object3D.translateZ(-0.01);
-        desk.object3D.translateY(0.17);
-        desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
-      })();
+      }
+
+      for (let desk of spawnedDesks) {
+        (async () => {
+          while (desk.hasLoaded == false) {
+            await nextTick();
+          }
+          desk.removeAttribute("draggable");
+          desk.removeAttribute("hoverable-visuals");
+          desk.removeAttribute("is-remote-hover-target");
+          desk.object3D.translateZ(-0.01);
+          desk.object3D.translateY(0.17);
+          desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
+        })();
+      }
     }
   };
 
