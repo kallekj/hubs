@@ -169,8 +169,6 @@ export default class SceneEntryManager {
     var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
 
     var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
-    var desksSpawned = false;
-
     for (let floaty_object of floaty_objects) {
       if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
         desksSpawned = true;
@@ -178,7 +176,7 @@ export default class SceneEntryManager {
       }
     }
 
-    if (!desksSpawned) {
+    if (floaty_objects.length < 12) {
       var spawnedDesks = this.spawnDesks(deskUrl);
       var g = AFRAME.scenes[0].querySelectorAll("[class]");
       var invisible_desks = [];
@@ -203,6 +201,11 @@ export default class SceneEntryManager {
           desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
         })();
       }
+    } else {
+      var desk = floaty_objects[11];
+      desk.removeAttribute("draggable");
+      desk.removeAttribute("hoverable-visuals");
+      desk.removeAttribute("is-remote-hover-target");
     }
   };
 
