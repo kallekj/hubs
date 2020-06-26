@@ -169,14 +169,15 @@ export default class SceneEntryManager {
     var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
 
     var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
-    for (let floaty_object of floaty_objects) {
-      if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
-        desksSpawned = true;
-        break;
-      }
-    }
+    // for (let floaty_object of floaty_objects) {
+    //   if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
+    //     desksSpawned = true;
+    //     break;
+    //   }
+    // }
 
-    if (floaty_objects.length < 12) {
+    var currentPlayers = window.APP.componentRegistry["player-info"];
+    if (currentPlayers.length < 2) {
       var spawnedDesks = this.spawnDesks(deskUrl);
       var g = AFRAME.scenes[0].querySelectorAll("[class]");
       var invisible_desks = [];
