@@ -169,20 +169,29 @@ export default class SceneEntryManager {
     var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
     var spawnedDesks = this.spawnDesks(deskUrl);
 
+    var g = AFRAME.scenes[0].querySelectorAll("[class]");
+    var invisible_desks = [];
+    for (let e of g) {
+      if (e.object3D != null) {
+        if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
+          invisible_desks.push(e);
+        }
+      }
+    }
+    
     for (let desk of spawnedDesks) {
       (async () => {
         while (desk.hasLoaded == false) {
           await nextTick();
         }
-        //newDesk.setAttribute("position", deskGroupChild.el.object3D.getWorldPosition());
         desk.removeAttribute("draggable");
         desk.removeAttribute("hoverable-visuals");
         desk.removeAttribute("is-remote-hover-target");
         desk.object3D.translateZ(-0.01);
+        desk.object3D.translateY(0.17);
+        desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
       })();
     }
-
-    //var desk = this.spawnDesk_Top(deskUrl, "1 1 3", newID);
   };
 
   whenSceneLoaded = callback => {

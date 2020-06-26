@@ -1,6 +1,5 @@
 /* global AFRAME */
 const COLLISION_LAYERS = require("../constants").COLLISION_LAYERS;
-
 AFRAME.registerComponent("floaty-object", {
   schema: {
     // Make the object locked/kinematic upon load
@@ -95,17 +94,16 @@ AFRAME.registerComponent("floaty-object", {
     //-------------------CUSTOM------------------------
     this.wasHeld = isHeld;
     const userinput = AFRAME.scenes[0].systems.userinput;
-    if (userinput.get("/actions/raiseNearestDesk")) {
-      if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
-        if (this.el.object3D.getWorldPosition().y < 1.82) {
-          this.el.object3D.translateY(0.01);
+    if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
+      if (userinput.get("/actions/raiseNearestDesk")) {
+        if (this.el.object3D.getWorldPosition().y < 1.402) {
+          this.el.object3D.translateY(0.0007);
+          this.el.invisible_desk.object3D.translateY(0.0007);
         }
-      }
-    }
-    if (userinput.get("/actions/lowerNearestDesk")) {
-      if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
-        if (this.el.object3D.getWorldPosition().y > 0.74) {
-          this.el.object3D.translateY(-0.01);
+      } else if (userinput.get("/actions/lowerNearestDesk")) {
+        if (this.el.object3D.getWorldPosition().y > 0.905) {
+          this.el.object3D.translateY(-0.0007);
+          this.el.invisible_desk.object3D.translateY(-0.0007);
         }
       }
     }
