@@ -59,7 +59,7 @@ AFRAME.registerComponent("floaty-object", {
           // If the object to snap onto has a 3D object
           if (media_loaders[i].object3D != null) {
             // Check if object is of the desired type
-            if (media_loaders[i].object3D.name.substring(0, 5) == "Image") {
+            if (media_loaders[i].object3D.name.substring(0, 10).toLowerCase() == "snapobject") {
               // If close enough to an object
               if (this.el.object3D.getWorldPosition().distanceTo(media_loaders[i].object3D.getWorldPosition()) < 0.5) {
                 // Snap onto it
@@ -93,25 +93,23 @@ AFRAME.registerComponent("floaty-object", {
     }
     //-------------------CUSTOM------------------------
     this.wasHeld = isHeld;
-    const userinput = AFRAME.scenes[0].systems.userinput;
-    if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
-      var avatars = document.querySelectorAll("[networked-avatar]")
-      if (userinput.get("/actions/raiseNearestDesk")) {
-        
-        
+    // const userinput = AFRAME.scenes[0].systems.userinput;
+    // if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
+    //   var avatars = document.querySelectorAll("[networked-avatar]")
+    //   if (userinput.get("/actions/raiseNearestDesk")) {
 
-        if (this.el.object3D.getWorldPosition().y < 1.402) {
-          this.el.object3D.translateY(0.0007);
-          this.el.invisible_desk.object3D.translateY(0.0007);
-          
-        }
-      } else if (userinput.get("/actions/lowerNearestDesk")) {
-        if (this.el.object3D.getWorldPosition().y > 0.905) {
-          this.el.object3D.translateY(-0.0007);
-          this.el.invisible_desk.object3D.translateY(-0.0007);
-        }
-      }
-    }
+    //     if (this.el.object3D.getWorldPosition().y < 1.402) {
+    //       this.el.object3D.translateY(0.0007);
+    //       this.el.invisible_desk.object3D.translateY(0.0007);
+
+    //     }
+    //   } else if (userinput.get("/actions/lowerNearestDesk")) {
+    //     if (this.el.object3D.getWorldPosition().y > 0.905) {
+    //       this.el.object3D.translateY(-0.0007);
+    //       this.el.invisible_desk.object3D.translateY(-0.0007);
+    //     }
+    //   }
+    // }
     //---------------------------------------------------
   },
 

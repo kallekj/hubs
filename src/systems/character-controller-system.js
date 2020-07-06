@@ -42,6 +42,7 @@ const calculateDisplacementToDesiredPOV = (function() {
  * The controller accounts for playspace offset and orientation and depends on the nav mesh system for translation.
  * @namespace avatar
  */
+
 const SNAP_ROTATION_RADIAN = THREE.Math.DEG2RAD * 45;
 const BASE_SPEED = 3.2; //TODO: in what units?
 export class CharacterControllerSystem {
@@ -141,6 +142,13 @@ export class CharacterControllerSystem {
       childMatch(this.avatarRig.object3D, this.avatarPOV.object3D, finalPOV);
     };
   })();
+
+  distanceToDesk = function(character_pos, desk) {
+    var desk_pos = desk.getWorldPosition();
+    var x_distance = character_pos.x - desk_pos.x;
+    var z_distance = character_pos.z - desk_pos.z;
+    return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
+  };
 
   tick = (function() {
     const snapRotatedPOV = new THREE.Matrix4();
@@ -337,6 +345,75 @@ export class CharacterControllerSystem {
           }
         }
       }
+
+      // ------------------------------------------CUSTOM------------------------------------
+      // Get the floaty objects
+      const floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
+      // Initiate the list of interactable desks
+      var interactable_desks = [];
+      // Extract the interactable desks from the list of floaty objects
+      for (let floaty_obj of floaty_objects) {
+        if (floaty_obj.object3D.name.substring(0, 16) == "Interactive_Desk") {
+          interactable_desks.push(floaty_obj);
+        }
+      }
+      // If user wants to raise desk
+      if (userinput.get("/actions/raiseNearestDesk")) {
+        // Get avatar position
+        var avatarPos = this.avatarRig.object3D.getWorldPosition();
+        // Sort the interactable desks by euclidean distance
+        var sorted_interactable_desks = interactable_desks.sort(function(a, b) {
+          return (
+            Math.sqrt(
+              Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
+                Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
+            ) -
+            Math.sqrt(
+              Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
+                Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
+            )
+          );
+        });
+
+        // Only raise desk if user is close enough
+        if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
+          // Desk should not go above 1.402m in height
+          if (sorted_interactable_desks[0].object3D.getWorldPosition().y < 1.402) {
+            //Raise interactable desk and the collidable invisible desk
+            sorted_interactable_desks[0].object3D.translateY(0.0007);
+            sorted_interactable_desks[0].invisible_desk.object3D.translateY(0.0007);
+          }
+        }
+      }
+      // If user wants to lower desk
+      else if (userinput.get("/actions/lowerNearestDesk")) {
+        // Get avatar position
+        var avatarPos = this.avatarRig.object3D.getWorldPosition();
+        // Sort the interactable desks by euclidean distance
+        var sorted_interactable_desks = interactable_desks.sort(function(a, b) {
+          return (
+            Math.sqrt(
+              Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
+                Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
+            ) -
+            Math.sqrt(
+              Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
+                Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
+            )
+          );
+        });
+        // Only lower desk if user is close enough
+        if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
+          // Desk should not go below 0.905m in height
+          if (sorted_interactable_desks[0].object3D.getWorldPosition().y > 0.905) {
+            //Lower interactable desk and the collidable invisible desk
+            sorted_interactable_desks[0].object3D.translateY(-0.0007);
+            sorted_interactable_desks[0].invisible_desk.object3D.translateY(-0.0007);
+          }
+        }
+      }
+
+      //---------------------------------------------------------------------------------------
 
       childMatch(this.avatarRig.object3D, this.avatarPOV.object3D, newPOV);
       this.relativeMotion.copy(this.nextRelativeMotion);
