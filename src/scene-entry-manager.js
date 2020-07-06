@@ -50,6 +50,55 @@ export default class SceneEntryManager {
     return this._entered;
   };
 
+  loadAssetFromURL = (url, position) => {
+    var el = document.createElement("a-entity");
+    AFRAME.scenes[0].appendChild(el);
+    el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
+    el.setAttribute("networked", { template: "#interactable-media" });
+    el.setAttribute("position", position);
+    return el;
+  };
+
+  spawnDesks = url => {
+    // Spawn the desk and position it
+    var g = AFRAME.scenes[0].querySelectorAll("[class]");
+    var deskGroups = [];
+    for (let e of g) {
+      if (e.className.substring(0, 10) == "Desk_Group") {
+        deskGroups.push(e);
+      }
+    }
+    var desks = [];
+    var targets = [];
+    for (let deskGroup of deskGroups) {
+      for (let deskGroupChild of deskGroup.object3D.children) {
+        if (deskGroupChild.name.substring(0, deskGroupChild.name.length - 2) == "Invisible_Desk") {
+          var newDeskPosition = Object.assign({}, deskGroupChild.el.object3D.getWorldPosition());
+          // Offset Z- coordinate by small bit to make it blend well
+          //newDeskPosition.z = newDeskPosition.z - 0.01
+          var newDeskRotation = Object.assign({}, deskGroupChild.el.object3D.rotation);
+          var newDesk = this.loadAssetFromURL(url, newDeskPosition, newDeskRotation);
+          targets.push(deskGroupChild);
+          desks.push(newDesk);
+        }
+      }
+    }
+    for (var i = 0; i < desks.length; i++) {
+      desks[i].object3D.setRotationFromQuaternion(targets[i].el.object3D.getWorldQuaternion());
+      desks[i].object3D.name = "Interactive_Desk_".concat(i);
+    }
+    return desks;
+  };
+
+  floaty_object_is_desk = (floaty_object_position, invisible_desk_position) => {
+    var x_distance = floaty_object_position.x - invisible_desk_position.x;
+    var z_distance = floaty_object_position.z - invisible_desk_position.z;
+    if (Math.sqrt(x_distance * x_distance + z_distance * z_distance) < 0.1) {
+      return true;
+    }
+    return false;
+  };
+
   enterScene = async (mediaStream, enterInVR, muteOnEntry) => {
     document.getElementById("viewing-camera").removeAttribute("scene-preview-camera");
 
@@ -125,6 +174,89 @@ export default class SceneEntryManager {
     if (muteOnEntry) {
       this.scene.emit("action_mute");
     }
+
+    var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
+
+    var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
+    // for (let floaty_object of floaty_objects) {
+    //   if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
+    //     desksSpawned = true;
+    //     break;
+    //   }
+    // }
+
+    var currentPlayers = window.APP.componentRegistry["player-info"];
+    var scene_objects = AFRAME.scenes[0].querySelectorAll("[class]");
+    var invisible_desks = [];
+    var desksAlreadySpawned = false;
+
+    for (let e of scene_objects) {
+      if (e.object3D != null) {
+        if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
+          invisible_desks.push(e);
+        }
+      }
+    }
+    for (let floaty_object of floaty_objects) {
+      for (let inv_desk of invisible_desks) {
+        if (this.floaty_object_is_desk(floaty_object.object3D.getWorldPosition(), inv_desk.object3D.getWorldPosition())) {
+          desksAlreadySpawned = true;
+          floaty_object.invisible_desk = inv_desk;
+          floaty_object.object3D.name = "Interactive_Desk_".concat(inv_desk.object3D.name.slice(-1));
+          floaty_object.removeAttribute("draggable");
+          floaty_object.removeAttribute("hoverable-visuals");
+          floaty_object.removeAttribute("is-remote-hover-target");
+        }
+      }
+    }
+
+    if (!desksAlreadySpawned){
+      var spawnedDesks = this.spawnDesks(deskUrl);
+      for (let desk of spawnedDesks) {
+        (async () => {
+          while (desk.hasLoaded == false) {
+            await nextTick();
+          }
+          desk.removeAttribute("draggable");
+          desk.removeAttribute("hoverable-visuals");
+          desk.removeAttribute("is-remote-hover-target");
+          desk.object3D.translateZ(-0.01);
+          desk.object3D.translateY(0.17);
+          desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
+        })();
+      }
+    }
+    // if (currentPlayers.length < 2) {
+    //   var spawnedDesks = this.spawnDesks(deskUrl);
+    //   var g = AFRAME.scenes[0].querySelectorAll("[class]");
+    //   var invisible_desks = [];
+    //   for (let e of g) {
+    //     if (e.object3D != null) {
+    //       if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
+    //         invisible_desks.push(e);
+    //       }
+    //     }
+    //   }
+
+    //   for (let desk of spawnedDesks) {
+    //     (async () => {
+    //       while (desk.hasLoaded == false) {
+    //         await nextTick();
+    //       }
+    //       desk.removeAttribute("draggable");
+    //       desk.removeAttribute("hoverable-visuals");
+    //       desk.removeAttribute("is-remote-hover-target");
+    //       desk.object3D.translateZ(-0.01);
+    //       desk.object3D.translateY(0.17);
+    //       desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
+    //     })();
+    //   }
+    // } else {
+    //   var desk = floaty_objects[11];
+    //   desk.removeAttribute("draggable");
+    //   desk.removeAttribute("hoverable-visuals");
+    //   desk.removeAttribute("is-remote-hover-target");
+    // }
   };
 
   whenSceneLoaded = callback => {
@@ -616,3 +748,29 @@ export default class SceneEntryManager {
     audioEl.play();
   };
 }
+// //Make it not movable by mouse
+//     // newDesk.removeAttribute("draggable");
+//     // newDesk.removeAttribute("hoverable-visuals");
+//     // newDesk.removeAttribute("is-remote-hover-target");
+
+//     var current_objects = AFRAME.scenes[0].querySelectorAll("[id]");
+//     for (let current_object of current_objects) {
+//       if (current_object.id == newId) {
+//         console.log("CAN'T HAVE TWO OBJECTS WITH SAME ID");
+//         newDesk.remove();
+//         return null;
+//       }
+//     }
+//     newDesk.id = newId;
+
+//     (async () => {
+//       while (newDesk.hasLoaded == false) {
+//         await nextTick();
+//       }
+
+//       newDesk.removeAttribute("draggable");
+//       newDesk.removeAttribute("hoverable-visuals");
+//       newDesk.removeAttribute("is-remote-hover-target");
+//     })();
+
+//     return newDesk;

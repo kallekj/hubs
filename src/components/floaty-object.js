@@ -1,6 +1,5 @@
 /* global AFRAME */
 const COLLISION_LAYERS = require("../constants").COLLISION_LAYERS;
-
 AFRAME.registerComponent("floaty-object", {
   schema: {
     // Make the object locked/kinematic upon load
@@ -27,7 +26,16 @@ AFRAME.registerComponent("floaty-object", {
     this.onGrab = this.onGrab.bind(this);
     this.onRelease = this.onRelease.bind(this);
   },
-
+  snap(toSnap, snapOn) {
+    // Align rotation
+    toSnap.el.object3D.setRotationFromQuaternion(snapOn.object3D.getWorldQuaternion()); //.rotation.copy(snapOn.object3D.);
+    // Align position
+    toSnap.el.object3D.position.copy(snapOn.object3D.getWorldPosition());
+    // Set to same scale
+    toSnap.el.object3D.scale.copy(snapOn.object3D.getWorldScale());
+    // Move slightly to avoid texture tearing
+    toSnap.el.object3D.translateZ(0.002);
+  },
   tick() {
     if (!this.bodyHelper) {
       this.bodyHelper = this.el.components["body-helper"];
@@ -38,8 +46,30 @@ AFRAME.registerComponent("floaty-object", {
     if (isHeld && !this.wasHeld) {
       this.onGrab();
     }
+
     if (this.wasHeld && !isHeld) {
       this.onRelease();
+      // Custom code for snapping videos
+      // Check that the object is a video loader.
+      if (this.el.getAttribute("media-video") != null) {
+        // Load the objects which can be snapped on
+        media_loaders = AFRAME.scenes[0].querySelectorAll("[media-loader]");
+        var i = 0;
+        for (i = 0; i < media_loaders.length; i++) {
+          // If the object to snap onto has a 3D object
+          if (media_loaders[i].object3D != null) {
+            // Check if object is of the desired type
+            if (media_loaders[i].object3D.name.substring(0, 5) == "Image") {
+              // If close enough to an object
+              if (this.el.object3D.getWorldPosition().distanceTo(media_loaders[i].object3D.getWorldPosition()) < 0.5) {
+                // Snap onto it
+                this.snap(this, media_loaders[i]);
+                break;
+              }
+            }
+          }
+        }
+      }
     }
 
     if (!isHeld && this._makeStaticWhenAtRest) {
@@ -61,8 +91,28 @@ AFRAME.registerComponent("floaty-object", {
         this._makeStaticWhenAtRest = false;
       }
     }
-
+    //-------------------CUSTOM------------------------
     this.wasHeld = isHeld;
+    const userinput = AFRAME.scenes[0].systems.userinput;
+    if (this.el.object3D.name.substring(0, 16) == "Interactive_Desk") {
+      var avatars = document.querySelectorAll("[networked-avatar]")
+      if (userinput.get("/actions/raiseNearestDesk")) {
+        
+        
+
+        if (this.el.object3D.getWorldPosition().y < 1.402) {
+          this.el.object3D.translateY(0.0007);
+          this.el.invisible_desk.object3D.translateY(0.0007);
+          
+        }
+      } else if (userinput.get("/actions/lowerNearestDesk")) {
+        if (this.el.object3D.getWorldPosition().y > 0.905) {
+          this.el.object3D.translateY(-0.0007);
+          this.el.invisible_desk.object3D.translateY(-0.0007);
+        }
+      }
+    }
+    //---------------------------------------------------
   },
 
   play() {
