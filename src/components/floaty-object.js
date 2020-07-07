@@ -152,9 +152,6 @@ AFRAME.registerComponent("floaty-object", {
           if (this.snapTargetWithinRange(closestObject)) {
             // Snap onto it
             this.snap(this, closestObject);
-            // Set the opacity of all snap objects to normal
-            // Don't reset it since it will be used for following when desk is raised.
-            this.currentSnapTarget.object3DMap.mesh.material.opacity = 1;
           }
         }
       }
