@@ -44,7 +44,7 @@ AFRAME.registerComponent("floaty-object", {
     }
     //----------------------------------------------------------------
   },
-  // ----------------------- CUSTOM CODE --------------------------
+  // ----------------------- CUSTOM CODE, Various Functions --------------------------
   snap(toSnap, snapOn) {
     // Align rotation
     toSnap.el.object3D.setRotationFromQuaternion(snapOn.object3D.getWorldQuaternion()); //.rotation.copy(snapOn.object3D.);
@@ -54,6 +54,49 @@ AFRAME.registerComponent("floaty-object", {
     toSnap.el.object3D.scale.copy(snapOn.object3D.getWorldScale());
     // Move slightly to avoid texture tearing
     toSnap.el.object3D.translateZ(0.002);
+  },
+  getClosestSnapObject() {
+    // Get the media object, not necessary since it's just "this.el"
+    var mediaObject = this.el;
+    var closestObject = this.snapobjects[0];
+    for (let snapobject of this.snapobjects) {
+      if (
+        mediaObject.object3D.getWorldPosition().distanceTo(snapobject.object3D.getWorldPosition()) <
+        mediaObject.object3D.getWorldPosition().distanceTo(closestObject.object3D.getWorldPosition())
+      ) {
+        closestObject = snapobject;
+      }
+    }
+    return closestObject;
+  },
+  updateSnapTarget(closestObject) {
+    // Check if closest object already is colored
+    if (this.currentSnapTarget != closestObject) {
+      // If not, empty list of colored objects, since there should be only one colored object
+      if (this.currentSnapTarget != 0) {
+        this.currentSnapTarget.object3DMap.mesh.material.opacity = 1;
+      }
+      // Mark closest object by changing its opacity
+      closestObject.object3DMap.mesh.material.opacity = 0.5;
+      this.currentSnapTarget = closestObject;
+    }
+  },
+  clearSnapTarget() {
+    if (this.currentSnapTarget != 0) {
+      this.currentSnapTarget.object3DMap.mesh.material.opacity = 1;
+      this.currentSnapTarget = 0;
+    }
+  },
+  snapTargetWithinRange(closestObject) {
+    // A multiplier depending on the size of the snap-object for better snapping range
+    const scaleMultiplier = (closestObject.object3D.scale.x * closestObject.object3D.scale.y) / 2;
+    if (
+      this.el.object3D.getWorldPosition().distanceTo(closestObject.object3D.getWorldPosition()) <
+      0.4 + scaleMultiplier * 0.2
+    ) {
+      return true;
+    }
+    return false;
   },
   // --------------------------------------------------------------
   tick() {
@@ -73,44 +116,14 @@ AFRAME.registerComponent("floaty-object", {
       if (isHeld && this.el.getAttribute("media-video") != null) {
         // Check that there are any snap-objects in the environment
         if (this.snapobjects.length > 0) {
-          // Get the media object, not necessary since it's just "this.el"
-          var mediaObject = this.el;
-          // Go through the snap-objects to find the closest
-          var closestObject = this.snapobjects[0];
-          for (let snapobject of this.snapobjects) {
-            if (
-              mediaObject.object3D.getWorldPosition().distanceTo(snapobject.object3D.getWorldPosition()) <
-              mediaObject.object3D.getWorldPosition().distanceTo(closestObject.object3D.getWorldPosition())
-            ) {
-              closestObject = snapobject;
-            }
-          }
-          // A multiplier depending on the size of the snap-object for better snapping range
-          const scaleMultiplier = (closestObject.object3D.scale.x * closestObject.object3D.scale.y) / 2;
+          // Get the closest snap object
+          var closestObject = this.getClosestSnapObject();
           // Check if close enough to snap
-          if (
-            this.el.object3D.getWorldPosition().distanceTo(closestObject.object3D.getWorldPosition()) <
-            0.4 + scaleMultiplier * 0.2
-          ) {
-            // Check if closest object already is colored
-            if (this.coloredObjects.indexOf(closestObject) < 0) {
-              // If not, empty list of colored objects, since there should be only one colored object
-              if (this.coloredObjects.length > 0) {
-                for (let oldObject of this.coloredObjects) {
-                  oldObject.object3DMap.mesh.material.opacity = 1;
-                  this.coloredObjects.splice(this.coloredObjects.indexOf(oldObject, 1));
-                }
-              }
-              // Mark closest object by changing its opacity
-              closestObject.object3DMap.mesh.material.opacity = 0.5;
-              this.coloredObjects.push(closestObject);
-            }
+          if (this.snapTargetWithinRange(closestObject)) {
+            this.updateSnapTarget(closestObject);
           } else {
             // If no object is close enough, then set objects to normal opacity
-            for (let coloredObject of this.coloredObjects) {
-              coloredObject.object3DMap.mesh.material.opacity = 1;
-              this.coloredObjects.splice(this.coloredObjects.indexOf(coloredObject, 1));
-            }
+            this.clearSnapTarget();
           }
         }
       }
@@ -118,6 +131,7 @@ AFRAME.registerComponent("floaty-object", {
     if (this.currentTick > 1000000) {
       this.currentTick = 0;
     }
+
     // ---------------------------------------------------------------------------------------------------------------
 
     if (isHeld && !this.wasHeld) {
@@ -130,43 +144,17 @@ AFRAME.registerComponent("floaty-object", {
       //------------------------------- Custom code for snapping videos--------------------------
       // Check that the object is a video loader.
       if (this.el.getAttribute("media-video") != null) {
-        // Load the objects which can be snapped on
-        media_loaders = AFRAME.scenes[0].querySelectorAll("[media-loader]");
-        var snapobjects = [];
-        var i = 0;
-        for (i = 0; i < media_loaders.length; i++) {
-          // If the object to snap onto has a 3D object
-          if (media_loaders[i].object3D != null) {
-            // Check if object is of the desired type
-            if (media_loaders[i].object3D.name.substring(0, 10).toLowerCase() == "snapobject") {
-              snapobjects.push(media_loaders[i]);
-            }
-          }
-        }
         // Check if there are any snap objects in the scene
-        if (snapobjects.length > 0) {
-          var mediaObject = this.el;
-          // Sort list of snap objects by distance to media objects
-          var sortedSnapObjects = snapobjects.sort(function(a, b) {
-            return (
-              mediaObject.object3D.getWorldPosition().distanceTo(a.object3D.getWorldPosition()) -
-              mediaObject.object3D.getWorldPosition().distanceTo(b.object3D.getWorldPosition())
-            );
-          });
-          // A multiplier depending on the size of the snap-object for better snapping range
-          const scaleMultiplier = (sortedSnapObjects[0].object3D.scale.x * sortedSnapObjects[0].object3D.scale.y) / 2;
+        if (this.snapobjects.length > 0) {
+          // Get the closest snap object
+          var closestObject = this.getClosestSnapObject();
           // If the closest object is close enough
-          if (
-            this.el.object3D.getWorldPosition().distanceTo(sortedSnapObjects[0].object3D.getWorldPosition()) <
-            0.4 + scaleMultiplier * 0.2
-          ) {
+          if (this.snapTargetWithinRange(closestObject)) {
             // Snap onto it
-            this.snap(this, sortedSnapObjects[0]);
+            this.snap(this, closestObject);
             // Set the opacity of all snap objects to normal
-            for (let coloredObject of this.coloredObjects) {
-              coloredObject.object3DMap.mesh.material.opacity = 1;
-              this.coloredObjects.splice(this.coloredObjects.indexOf(coloredObject, 1));
-            }
+            // Don't reset it since it will be used for following when desk is raised.
+            this.currentSnapTarget.object3DMap.mesh.material.opacity = 1;
           }
         }
       }
