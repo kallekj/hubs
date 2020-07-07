@@ -28,7 +28,6 @@ AFRAME.registerComponent("floaty-object", {
 
     // ---------------------------CUSTOM----------------------------
     this.media_loaders = AFRAME.scenes[0].querySelectorAll("[media-loader]");
-    this.coloredObjects = [];
     this.snapobjects = [];
     this.currentTick = 0;
     this.currentSnapTarget = 0;
