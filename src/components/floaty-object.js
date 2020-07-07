@@ -25,6 +25,8 @@ AFRAME.registerComponent("floaty-object", {
   init() {
     this.onGrab = this.onGrab.bind(this);
     this.onRelease = this.onRelease.bind(this);
+
+    // ---------------------------CUSTOM----------------------------
     this.media_loaders = AFRAME.scenes[0].querySelectorAll("[media-loader]");
     this.coloredObjects = [];
     this.snapobjects = [];
@@ -40,6 +42,7 @@ AFRAME.registerComponent("floaty-object", {
         }
       }
     }
+    //----------------------------------------------------------------
   },
   // ----------------------- CUSTOM CODE --------------------------
   snap(toSnap, snapOn) {
@@ -62,6 +65,7 @@ AFRAME.registerComponent("floaty-object", {
     const isHeld = interaction && interaction.isHeld(this.el);
 
     // ----------------------Custom Code for highlighting snapping object where video will be snapped---------------
+
     this.currentTick = this.currentTick + 1;
     // Every 15th tick check if video object is nearby snap-object
     if (this.currentTick % 15 == 0) {
@@ -115,11 +119,14 @@ AFRAME.registerComponent("floaty-object", {
       this.currentTick = 0;
     }
     // ---------------------------------------------------------------------------------------------------------------
+
     if (isHeld && !this.wasHeld) {
       this.onGrab();
     }
 
     if (this.wasHeld && !isHeld) {
+      this.onRelease();
+
       //------------------------------- Custom code for snapping videos--------------------------
       // Check that the object is a video loader.
       if (this.el.getAttribute("media-video") != null) {
@@ -163,7 +170,6 @@ AFRAME.registerComponent("floaty-object", {
           }
         }
       }
-      this.onRelease();
       //------------------------------------------------------------------------------------------
     }
 
