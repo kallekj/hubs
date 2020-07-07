@@ -379,6 +379,13 @@ export class CharacterControllerSystem {
         if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
           // Desk should not go above 1.402m in height
           if (sorted_interactable_desks[0].object3D.getWorldPosition().y < 1.402) {
+            // Check if one has the ownership of the desk
+            const mine = NAF.utils.isMine(sorted_interactable_desks[0]);
+            // If one doesn't have ownership, take ownership
+            // This since one can't move the any object without having ownership of it
+            if (!mine) {
+              NAF.utils.takeOwnership(sorted_interactable_desks[0]);
+            }
             //Raise interactable desk and the collidable invisible desk
             sorted_interactable_desks[0].object3D.translateY(0.0007);
             sorted_interactable_desks[0].invisible_desk.object3D.translateY(0.0007);
@@ -406,6 +413,13 @@ export class CharacterControllerSystem {
         if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
           // Desk should not go below 0.905m in height
           if (sorted_interactable_desks[0].object3D.getWorldPosition().y > 0.905) {
+            // Check if one has the ownership of the desk
+            const mine = NAF.utils.isMine(sorted_interactable_desks[0]);
+            // If one doesn't have ownership, take ownership
+            // This since one can't move the any object without having ownership of it
+            if (!mine) {
+              NAF.utils.takeOwnership(sorted_interactable_desks[0]);
+            }
             //Lower interactable desk and the collidable invisible desk
             sorted_interactable_desks[0].object3D.translateY(-0.0007);
             sorted_interactable_desks[0].invisible_desk.object3D.translateY(-0.0007);
