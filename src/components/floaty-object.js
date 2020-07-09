@@ -135,11 +135,14 @@ AFRAME.registerComponent("floaty-object", {
 
     if (isHeld && !this.wasHeld) {
       this.onGrab();
+      if (this.el.getAttribute("media-video") != null) {
+        if (this.snapped) {
+          this.snapped = false;
+        }
+      }
     }
 
     if (this.wasHeld && !isHeld) {
-      this.onRelease();
-
       //------------------------------- Custom code for snapping videos--------------------------
       // Check that the object is a video loader.
       if (this.el.getAttribute("media-video") != null) {
@@ -151,11 +154,29 @@ AFRAME.registerComponent("floaty-object", {
           if (this.snapTargetWithinRange(closestObject)) {
             // Snap onto it
             this.snap(this, closestObject);
+            this.updateSnapTarget(closestObject);
+            this.snapped = true;
           }
         }
       }
       //------------------------------------------------------------------------------------------
+      this.onRelease();
     }
+    // ------------------------------- CUSTOM CODE, CLEAN CODE -----------------------------------
+    if (this.el.object3D.name == "SnapObject") {
+      if (this.el.object3D.position.y - this.el.deskOffsetY != this.el.desk.object3D.position.y) {
+        this.el.object3D.position.y = this.el.desk.object3D.position.y + this.el.deskOffsetY;
+      }
+    }
+    if (this.el.getAttribute("media-video") != null) {
+      if (this.snapped) {
+        if (this.el.object3D.position.y != this.currentSnapTarget.object3D.position.y) {
+          this.el.object3D.position.y = this.currentSnapTarget.object3D.position.y;
+        }
+      }
+    }
+
+    // --------------------------------------------------------------------------------------------
 
     if (!isHeld && this._makeStaticWhenAtRest) {
       const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
@@ -248,6 +269,14 @@ AFRAME.registerComponent("floaty-object", {
   },
 
   remove() {
+    // ----------- CUSTOM CODE -------------
+    if (this.el.getAttribute("media-video") != null) {
+      if (this.snapped) {
+        this.clearSnapTarget();
+        this.snapped = false;
+      }
+    }
+    // -------------------------------------
     if (this.stuckTo) {
       const stuckTo = this.stuckTo;
       delete this.stuckTo;

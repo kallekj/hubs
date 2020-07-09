@@ -388,6 +388,7 @@ export class CharacterControllerSystem {
             }
             //Raise interactable desk and the collidable invisible desk
             sorted_interactable_desks[0].object3D.translateY(0.0007);
+            sorted_interactable_desks[0].currentHeightOffset += 0.0007;
             sorted_interactable_desks[0].invisible_desk.object3D.translateY(0.0007);
           }
         }
@@ -422,6 +423,7 @@ export class CharacterControllerSystem {
             }
             //Lower interactable desk and the collidable invisible desk
             sorted_interactable_desks[0].object3D.translateY(-0.0007);
+            sorted_interactable_desks[0].currentHeightOffset -= 0.0007;
             sorted_interactable_desks[0].invisible_desk.object3D.translateY(-0.0007);
           }
         }

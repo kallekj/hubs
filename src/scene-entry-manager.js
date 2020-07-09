@@ -44,12 +44,16 @@ export default class SceneEntryManager {
       this.rightCursorController.components["cursor-controller"].enabled = false;
       this.leftCursorController.components["cursor-controller"].enabled = false;
     });
+    this.deskURLs = {
+      b5: "https://uploads-prod.reticulum.io/files/ae0a49d5-4fa5-4087-a572-a104c470a320.glb",
+      "eow-c": "https://uploads-prod.reticulum.io/files/09a3d5f6-8e7d-4cd3-b243-76bcc391a710.glb"
+    };
   };
 
   hasEntered = () => {
     return this._entered;
   };
-
+  // ------------------------------- CUSTOM CODE ------------------------------------
   loadAssetFromURL = (url, position) => {
     var el = document.createElement("a-entity");
     AFRAME.scenes[0].appendChild(el);
@@ -59,7 +63,7 @@ export default class SceneEntryManager {
     return el;
   };
 
-  spawnDesks = url => {
+  spawnDesks = () => {
     // Spawn the desk and position it
     var g = AFRAME.scenes[0].querySelectorAll("[class]");
     var deskGroups = [];
@@ -72,13 +76,12 @@ export default class SceneEntryManager {
     var targets = [];
     for (let deskGroup of deskGroups) {
       for (let deskGroupChild of deskGroup.object3D.children) {
-        if (deskGroupChild.name.substring(0, deskGroupChild.name.length - 2) == "Invisible_Desk") {
+        if (deskGroupChild.name.substring(0, 14) == "Invisible_Desk") {
+          var deskType = deskGroupChild.name.substring(15, deskGroupChild.name.length - 2);
           var newDeskPosition = Object.assign({}, deskGroupChild.el.object3D.getWorldPosition());
-          // Offset Z- coordinate by small bit to make it blend well
-          //newDeskPosition.z = newDeskPosition.z - 0.01
-          var newDeskRotation = Object.assign({}, deskGroupChild.el.object3D.rotation);
-          var newDesk = this.loadAssetFromURL(url, newDeskPosition, newDeskRotation);
+          var newDesk = this.loadAssetFromURL(this.deskURLs[deskType.toLowerCase()], newDeskPosition);
           targets.push(deskGroupChild);
+          newDesk.deskType = deskType;
           desks.push(newDesk);
         }
       }
@@ -86,19 +89,200 @@ export default class SceneEntryManager {
     for (var i = 0; i < desks.length; i++) {
       desks[i].object3D.setRotationFromQuaternion(targets[i].el.object3D.getWorldQuaternion());
       desks[i].object3D.name = "Interactive_Desk_".concat(i);
+      desks[i].currentHeightOffset = 0;
     }
     return desks;
   };
+  degreeToRadians = degrees => {
+    return (degrees * Math.PI) / 180;
+  };
+  getScreenOffsetsForDesk(deskType) {
+    if (deskType.toLowerCase() === "b5") {
+      return [
+        { posX: -1.135, posY: 0.574, posZ: -0.222, rotX: 0, rotY: this.degreeToRadians(17.5), rotZ: 0 },
+        {
+          posX: -1.125,
+          posY: 0.21,
+          posZ: -0.185,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(17.5),
+          rotZ: this.degreeToRadians(0)
+        },
+        { posX: -0.572, posY: 0.574, posZ: -0.354, rotX: 0, rotY: this.degreeToRadians(8.7), rotZ: 0 },
+        {
+          posX: -0.572,
+          posY: 0.21,
+          posZ: -0.313,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(8.5),
+          rotZ: this.degreeToRadians(0)
+        },
+        { posX: 0, posY: 0.574, posZ: -0.391, rotX: 0, rotY: 0, rotZ: 0 },
+        { posX: 0, posY: 0.21, posZ: -0.355, rotX: this.degreeToRadians(-13), rotY: 0, rotZ: 0 },
+
+        { posX: 0.575, posY: 0.574, posZ: -0.355, rotX: 0, rotY: this.degreeToRadians(-8.7), rotZ: 0 },
+        {
+          posX: 0.575,
+          posY: 0.21,
+          posZ: -0.31,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(-8.7),
+          rotZ: 0
+        },
+        { posX: 1.14, posY: 0.574, posZ: -0.22, rotX: 0, rotY: this.degreeToRadians(-17.4), rotZ: 0 },
+        {
+          posX: 1.128,
+          posY: 0.21,
+          posZ: -0.18,
+          rotX: this.degreeToRadians(-13.5),
+          rotY: this.degreeToRadians(-17.4),
+          rotZ: 0
+        }
+      ];
+    } else if (deskType.toLowerCase() == "eow-c") {
+      return [
+        { posX: -0.625, posY: 0.7, posZ: -0.635, rotX: 0, rotY: this.degreeToRadians(6.3), rotZ: 0 },
+        {
+          posX: 0.465,
+          posY: 0.7,
+          posZ: -0.635,
+          rotX: 0,
+          rotY: this.degreeToRadians(-6.3),
+          rotZ: 0
+        },
+        {
+          posX: -0.935,
+          posY: 0.18,
+          posZ: -0.3,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(12.5),
+          rotZ: 0
+        },
+        {
+          posX: -0.366,
+          posY: 0.18,
+          posZ: -0.39,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(4),
+          rotZ: 0
+        },
+        {
+          posX: 0.206,
+          posY: 0.18,
+          posZ: -0.39,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(-4),
+          rotZ: 0
+        },
+        {
+          posX: 0.767,
+          posY: 0.18,
+          posZ: -0.3,
+          rotX: this.degreeToRadians(-13),
+          rotY: this.degreeToRadians(-12.5),
+          rotZ: 0
+        }
+      ];
+    }
+    return null;
+  }
+  getScreenScalesForDesk(deskType) {
+    if (deskType.toLowerCase() === "b5") {
+      return { x: 0.55, y: 0.58, z: 0.7 };
+    } else if (deskType.toLowerCase() === "eow-c") {
+      return [{ x: 1.08, y: 1.08, z: 1 }, { x: 0.55, y: 0.58, z: 0.7 }];
+    }
+    return null;
+  }
+
+  spawnSnapScreens = async desk => {
+    const tempURL = "https://uploads-prod.reticulum.io/files/5c7f364e-10b7-46d6-81bf-afd63ff10a4b.png";
+    // Get the correct position offset and scale of the snap objects for the current desk
+    var snapObjectOffsets = this.getScreenOffsetsForDesk(desk.deskType);
+    var snapObjectScales = this.getScreenScalesForDesk(desk.deskType);
+    // If unknown desk name, don't continue
+    if (snapObjectOffsets != null) {
+      var deskPosition = Object.assign({}, desk.object3D.getWorldPosition());
+
+      snapObjectOffsets.forEach(snapOffset => {
+        var snapObject = this.loadAssetFromURL(tempURL, deskPosition);
+
+        (async () => {
+          while (snapObject.hasLoaded === false) {
+            await nextTick();
+          }
+          if (snapObject.hasLoaded) {
+            snapObject.object3D.setRotationFromQuaternion(desk.object3D.getWorldQuaternion());
+
+            if (desk.deskType.toLowerCase() != "eow-c") {
+              // Set correct scale for snap object
+              snapObject.object3D.scale.x = snapObjectScales.x;
+              snapObject.object3D.scale.y = snapObjectScales.y;
+              snapObject.object3D.scale.z = snapObjectScales.z;
+            } else {
+              // Since EOW-c has both big and small monitors
+              if (snapOffset.posY > 0.6) {
+                // Set correct scale for snap object
+                snapObject.object3D.scale.x = snapObjectScales[0].x;
+                snapObject.object3D.scale.y = snapObjectScales[0].y;
+                snapObject.object3D.scale.z = snapObjectScales[0].z;
+              } else {
+                snapObject.object3D.scale.x = snapObjectScales[1].x;
+                snapObject.object3D.scale.y = snapObjectScales[1].y;
+                snapObject.object3D.scale.z = snapObjectScales[1].z;
+              }
+            }
+
+            // Move snap object to correct position offset
+            snapObject.object3D.translateX(snapOffset.posX);
+            snapObject.object3D.translateY(snapOffset.posY - 0.17);
+            snapObject.object3D.translateZ(snapOffset.posZ);
+            // Rotate snap object
+            snapObject.object3D.rotation.x += snapOffset.rotX;
+            snapObject.object3D.rotation.y += snapOffset.rotY;
+            snapObject.object3D.rotation.z += snapOffset.rotZ;
+            snapObject.object3D.translateZ(0.01);
+            // Make snap object not moveable by mouse/oculus controller
+            snapObject.removeAttribute("draggable");
+            snapObject.removeAttribute("hoverable-visuals");
+            snapObject.removeAttribute("is-remote-hover-target");
+            // Assign name, desk and the current offset in Y axis
+            snapObject.object3D.name = "SnapObject";
+            snapObject.isSnapObject = true;
+            snapObject.desk = desk;
+            snapObject.deskOffsetY = Math.fround(snapOffset.posY - 0.17);
+          }
+        })();
+      });
+    }
+  };
+  getEuclideanDistOfX_Z(object1, object2) {
+    var x_distance = object1.x - object2.x;
+    var z_distance = object1.z - object2.z;
+    return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
+  }
 
   floaty_object_is_desk = (floaty_object_position, invisible_desk_position) => {
     var x_distance = floaty_object_position.x - invisible_desk_position.x;
     var z_distance = floaty_object_position.z - invisible_desk_position.z;
-    if (Math.sqrt(x_distance * x_distance + z_distance * z_distance) < 0.1) {
+    if (Math.sqrt(x_distance * x_distance + z_distance * z_distance) < 0.2) {
       return true;
     }
     return false;
   };
+  findDeskForSnapObject = snapObject => {
+    var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
+    var desks = [];
+    floaty_objects.forEach(floaty_object => {
+      if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
+        desks.push(floaty_object);
+      }
+    });
+    desks.sort((a, b) => this.getEuclideanDistOfX_Z(snapObject, a) - this.getEuclideanDistOfX_Z(snapObject, b));
+    return desks[0];
+  };
 
+  // ---------------------------------------------------------------------------------
   enterScene = async (mediaStream, enterInVR, muteOnEntry) => {
     document.getElementById("viewing-camera").removeAttribute("scene-preview-camera");
 
@@ -175,17 +359,9 @@ export default class SceneEntryManager {
       this.scene.emit("action_mute");
     }
 
-    var deskUrl = "https://uploads-prod.reticulum.io/files/e4aa3f71-c182-4254-a371-e0fe6f5c2688.glb";
-
+    // ----------------------- CUSTOM --------------------------
     var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
-    // for (let floaty_object of floaty_objects) {
-    //   if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
-    //     desksSpawned = true;
-    //     break;
-    //   }
-    // }
 
-    var currentPlayers = window.APP.componentRegistry["player-info"];
     var scene_objects = AFRAME.scenes[0].querySelectorAll("[class]");
     var invisible_desks = [];
     var desksAlreadySpawned = false;
@@ -199,64 +375,67 @@ export default class SceneEntryManager {
     }
     for (let floaty_object of floaty_objects) {
       for (let inv_desk of invisible_desks) {
-        if (this.floaty_object_is_desk(floaty_object.object3D.getWorldPosition(), inv_desk.object3D.getWorldPosition())) {
+        if (
+          this.floaty_object_is_desk(floaty_object.object3D.getWorldPosition(), inv_desk.object3D.getWorldPosition())
+        ) {
           desksAlreadySpawned = true;
           floaty_object.invisible_desk = inv_desk;
-          floaty_object.object3D.name = "Interactive_Desk_".concat(inv_desk.object3D.name.slice(-1));
+          floaty_object.object3D.name = "Interactive_Desk".concat(
+            inv_desk.object3D.name.substring(14, inv_desk.object3D.name.length)
+          );
           floaty_object.removeAttribute("draggable");
           floaty_object.removeAttribute("hoverable-visuals");
           floaty_object.removeAttribute("is-remote-hover-target");
         }
       }
     }
+    for (let floaty_object of floaty_objects) {
+      if (desksAlreadySpawned) {
+        if (floaty_object.object3D != null) {
+          if (floaty_object.object3D.scale.x == 1.08 || floaty_object.object3D.scale.x == 0.55) {
+            const mine = NAF.utils.isMine(floaty_object);
+            // If one doesn't have ownership, take ownership
+            // This since one can't move the any object without having ownership of it
+            if (!mine) {
+              NAF.utils.takeOwnership(floaty_object);
+            }
+            floaty_object.object3D.name = "SnapObject";
+            floaty_object.removeAttribute("draggable");
+            floaty_object.removeAttribute("hoverable-visuals");
+            floaty_object.removeAttribute("is-remote-hover-target");
+            floaty_object.desk = this.findDeskForSnapObject(floaty_object);
+            floaty_object.deskOffsetY =
+              floaty_object.object3D.getWorldPosition().y - floaty_object.desk.object3D.getWorldPosition().y;
+          }
+        }
+      }
+    }
 
-    if (!desksAlreadySpawned){
-      var spawnedDesks = this.spawnDesks(deskUrl);
-      for (let desk of spawnedDesks) {
+    if (!desksAlreadySpawned) {
+      var spawnedDesks = this.spawnDesks();
+      spawnedDesks.forEach(desk => {
         (async () => {
-          while (desk.hasLoaded == false) {
+          while (desk.hasLoaded === false) {
             await nextTick();
           }
+
           desk.removeAttribute("draggable");
           desk.removeAttribute("hoverable-visuals");
           desk.removeAttribute("is-remote-hover-target");
           desk.object3D.translateZ(-0.01);
           desk.object3D.translateY(0.17);
           desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
+          desk.YAxisOffset = 0;
+          if (desk.deskType.toLowerCase() == "eow-c") {
+            desk.object3D.translateX(0.08);
+            desk.object3D.translateZ(0.08);
+          }
+          this.spawnSnapScreens(desk);
         })();
-      }
+      });
     }
-    // if (currentPlayers.length < 2) {
-    //   var spawnedDesks = this.spawnDesks(deskUrl);
-    //   var g = AFRAME.scenes[0].querySelectorAll("[class]");
-    //   var invisible_desks = [];
-    //   for (let e of g) {
-    //     if (e.object3D != null) {
-    //       if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
-    //         invisible_desks.push(e);
-    //       }
-    //     }
-    //   }
 
-    //   for (let desk of spawnedDesks) {
-    //     (async () => {
-    //       while (desk.hasLoaded == false) {
-    //         await nextTick();
-    //       }
-    //       desk.removeAttribute("draggable");
-    //       desk.removeAttribute("hoverable-visuals");
-    //       desk.removeAttribute("is-remote-hover-target");
-    //       desk.object3D.translateZ(-0.01);
-    //       desk.object3D.translateY(0.17);
-    //       desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
-    //     })();
-    //   }
-    // } else {
-    //   var desk = floaty_objects[11];
-    //   desk.removeAttribute("draggable");
-    //   desk.removeAttribute("hoverable-visuals");
-    //   desk.removeAttribute("is-remote-hover-target");
-    // }
+    // -----------------------------------------------------------------
   };
 
   whenSceneLoaded = callback => {
@@ -748,29 +927,3 @@ export default class SceneEntryManager {
     audioEl.play();
   };
 }
-// //Make it not movable by mouse
-//     // newDesk.removeAttribute("draggable");
-//     // newDesk.removeAttribute("hoverable-visuals");
-//     // newDesk.removeAttribute("is-remote-hover-target");
-
-//     var current_objects = AFRAME.scenes[0].querySelectorAll("[id]");
-//     for (let current_object of current_objects) {
-//       if (current_object.id == newId) {
-//         console.log("CAN'T HAVE TWO OBJECTS WITH SAME ID");
-//         newDesk.remove();
-//         return null;
-//       }
-//     }
-//     newDesk.id = newId;
-
-//     (async () => {
-//       while (newDesk.hasLoaded == false) {
-//         await nextTick();
-//       }
-
-//       newDesk.removeAttribute("draggable");
-//       newDesk.removeAttribute("hoverable-visuals");
-//       newDesk.removeAttribute("is-remote-hover-target");
-//     })();
-
-//     return newDesk;
