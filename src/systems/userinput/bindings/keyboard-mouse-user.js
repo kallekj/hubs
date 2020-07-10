@@ -471,7 +471,9 @@ export const keyboardMouseUserBindings = addSetsToBindings({
       dest: { value: paths.actions.spawnEmoji6 },
       xform: xforms.rising
     },
-    //----------CUSTOM---------------
+    //---------------------------------------------------------------------------------------------------------
+    // |                                              Custom                                                  |
+    // --------------------------------------------------------------------------------------------------------
     {
       src: {
         value: paths.device.keyboard.key("u")
@@ -491,7 +493,9 @@ export const keyboardMouseUserBindings = addSetsToBindings({
       },
       xform: xforms.value
     }
-    //---------------------------------
+    //---------------------------------------------------------------------------------------------------------
+    // |                                              Custom                                                  |
+    // --------------------------------------------------------------------------------------------------------
     // Helpful bindings for debugging hands in 2D
     // {
     //   src: {},
