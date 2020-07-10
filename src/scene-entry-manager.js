@@ -76,20 +76,26 @@ export default class SceneEntryManager {
     var targets = [];
     for (let deskGroup of deskGroups) {
       for (let deskGroupChild of deskGroup.object3D.children) {
+        // Find the invisible desks to link with
         if (deskGroupChild.name.substring(0, 14) == "Invisible_Desk") {
           var deskType = deskGroupChild.name.substring(15, deskGroupChild.name.length - 2);
           var newDeskPosition = Object.assign({}, deskGroupChild.el.object3D.getWorldPosition());
+          // Load desk at correct position
           var newDesk = this.loadAssetFromURL(this.deskURLs[deskType.toLowerCase()], newDeskPosition);
           targets.push(deskGroupChild);
-          newDesk.deskType = deskType;
+          newDesk.updateComponent("media-loader", { deskType: deskType });
+          newDesk.updateComponent("media-loader", { invisibleDeskName: deskGroupChild.name });
+          newDesk.updateComponent("media-loader", { objectType: "Interactive_Desk" });
           desks.push(newDesk);
         }
       }
     }
     for (var i = 0; i < desks.length; i++) {
+      // Set rotation for desks
       desks[i].object3D.setRotationFromQuaternion(targets[i].el.object3D.getWorldQuaternion());
       desks[i].object3D.name = "Interactive_Desk_".concat(i);
       desks[i].currentHeightOffset = 0;
+      desks[i].updateComponent("media-loader", { deskName: desks[i].object3D.name });
     }
     return desks;
   };
@@ -198,8 +204,8 @@ export default class SceneEntryManager {
   spawnSnapScreens = async desk => {
     const tempURL = "https://uploads-prod.reticulum.io/files/5c7f364e-10b7-46d6-81bf-afd63ff10a4b.png";
     // Get the correct position offset and scale of the snap objects for the current desk
-    var snapObjectOffsets = this.getScreenOffsetsForDesk(desk.deskType);
-    var snapObjectScales = this.getScreenScalesForDesk(desk.deskType);
+    var snapObjectOffsets = this.getScreenOffsetsForDesk(desk.components["media-loader"].data.deskType);
+    var snapObjectScales = this.getScreenScalesForDesk(desk.components["media-loader"].data.deskType);
     // If unknown desk name, don't continue
     if (snapObjectOffsets != null) {
       var deskPosition = Object.assign({}, desk.object3D.getWorldPosition());
@@ -214,7 +220,7 @@ export default class SceneEntryManager {
           if (snapObject.hasLoaded) {
             snapObject.object3D.setRotationFromQuaternion(desk.object3D.getWorldQuaternion());
 
-            if (desk.deskType.toLowerCase() != "eow-c") {
+            if (desk.components["media-loader"].data.deskType.toLowerCase() != "eow-c") {
               // Set correct scale for snap object
               snapObject.object3D.scale.x = snapObjectScales.x;
               snapObject.object3D.scale.y = snapObjectScales.y;
@@ -247,8 +253,10 @@ export default class SceneEntryManager {
             snapObject.removeAttribute("hoverable-visuals");
             snapObject.removeAttribute("is-remote-hover-target");
             // Assign name, desk and the current offset in Y axis
+            snapObject.updateComponent("media-loader", { objectType: "SnapObject" });
             snapObject.object3D.name = "SnapObject";
             snapObject.isSnapObject = true;
+            snapObject.updateComponent("media-loader", { deskName: desk.components["media-loader"].data.deskName });
             snapObject.desk = desk;
             snapObject.deskOffsetY = Math.fround(snapOffset.posY - 0.17);
           }
@@ -256,31 +264,31 @@ export default class SceneEntryManager {
       });
     }
   };
-  getEuclideanDistOfX_Z(object1, object2) {
+  getEuclideanDistOfX_Z = (object1, object2) => {
     var x_distance = object1.x - object2.x;
     var z_distance = object1.z - object2.z;
     return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
-  }
+  };
 
-  floaty_object_is_desk = (floaty_object_position, invisible_desk_position) => {
-    var x_distance = floaty_object_position.x - invisible_desk_position.x;
-    var z_distance = floaty_object_position.z - invisible_desk_position.z;
-    if (Math.sqrt(x_distance * x_distance + z_distance * z_distance) < 0.2) {
-      return true;
-    }
-    return false;
-  };
-  findDeskForSnapObject = snapObject => {
-    var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
-    var desks = [];
-    floaty_objects.forEach(floaty_object => {
-      if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
-        desks.push(floaty_object);
-      }
-    });
-    desks.sort((a, b) => this.getEuclideanDistOfX_Z(snapObject, a) - this.getEuclideanDistOfX_Z(snapObject, b));
-    return desks[0];
-  };
+  // floaty_object_is_desk = (floaty_object_position, invisible_desk_position) => {
+  //   var x_distance = floaty_object_position.x - invisible_desk_position.x;
+  //   var z_distance = floaty_object_position.z - invisible_desk_position.z;
+  //   if (Math.sqrt(x_distance * x_distance + z_distance * z_distance) < 0.2) {
+  //     return true;
+  //   }
+  //   return false;
+  // };
+  // findDeskForSnapObject = snapObject => {
+  //   var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
+  //   var desks = [];
+  //   floaty_objects.forEach(floaty_object => {
+  //     if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
+  //       desks.push(floaty_object);
+  //     }
+  //   });
+  //   desks.sort((a, b) => this.getEuclideanDistOfX_Z(snapObject, a) - this.getEuclideanDistOfX_Z(snapObject, b));
+  //   return desks[0];
+  // };
 
   // ---------------------------------------------------------------------------------
   enterScene = async (mediaStream, enterInVR, muteOnEntry) => {
@@ -359,13 +367,13 @@ export default class SceneEntryManager {
       this.scene.emit("action_mute");
     }
 
-    // ----------------------- CUSTOM --------------------------
+    // ----------------------- CUSTOM -----------------------------------------------------------------------------
     var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
 
     var scene_objects = AFRAME.scenes[0].querySelectorAll("[class]");
     var invisible_desks = [];
     var desksAlreadySpawned = false;
-
+    // Get the invisible desks of the scene
     for (let e of scene_objects) {
       if (e.object3D != null) {
         if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
@@ -373,37 +381,49 @@ export default class SceneEntryManager {
         }
       }
     }
+    // Determine if interactive desks already are spawned
+    var interactive_desks = [];
     for (let floaty_object of floaty_objects) {
-      for (let inv_desk of invisible_desks) {
-        if (
-          this.floaty_object_is_desk(floaty_object.object3D.getWorldPosition(), inv_desk.object3D.getWorldPosition())
-        ) {
+      if (floaty_object.components["media-loader"] != null) {
+        if (floaty_object.components["media-loader"].data.objectType == "Interactive_Desk") {
           desksAlreadySpawned = true;
-          floaty_object.invisible_desk = inv_desk;
-          floaty_object.object3D.name = "Interactive_Desk".concat(
-            inv_desk.object3D.name.substring(14, inv_desk.object3D.name.length)
-          );
+          // If desks are spawned, find the corresponding invisible desk and link them together
+          for (let inv_desk of invisible_desks) {
+            if (inv_desk.object3D.name == floaty_object.components["media-loader"].data.invisibleDeskName) {
+              floaty_object.invisible_desk = inv_desk;
+              floaty_object.object3D.name = "Interactive_Desk".concat(
+                inv_desk.object3D.name.substring(14, inv_desk.object3D.name.length)
+              );
+            }
+          }
+          // Make desk not draggable
           floaty_object.removeAttribute("draggable");
           floaty_object.removeAttribute("hoverable-visuals");
           floaty_object.removeAttribute("is-remote-hover-target");
+          interactive_desks.push(floaty_object);
         }
       }
     }
-    for (let floaty_object of floaty_objects) {
-      if (desksAlreadySpawned) {
+
+    if (desksAlreadySpawned) {
+      // Find the snap objects
+      for (let floaty_object of floaty_objects) {
         if (floaty_object.object3D != null) {
-          if (floaty_object.object3D.scale.x == 1.08 || floaty_object.object3D.scale.x == 0.55) {
-            const mine = NAF.utils.isMine(floaty_object);
-            // If one doesn't have ownership, take ownership
-            // This since one can't move the any object without having ownership of it
-            if (!mine) {
-              NAF.utils.takeOwnership(floaty_object);
-            }
+          if (floaty_object.components["media-loader"].data.objectType == "SnapObject") {
+            // Give correct object3D name and make not draggable
             floaty_object.object3D.name = "SnapObject";
             floaty_object.removeAttribute("draggable");
             floaty_object.removeAttribute("hoverable-visuals");
             floaty_object.removeAttribute("is-remote-hover-target");
-            floaty_object.desk = this.findDeskForSnapObject(floaty_object);
+            // Find the corresponding interactive desk of the snap object
+            for (let desk of interactive_desks) {
+              if (
+                desk.components["media-loader"].data.deskName == floaty_object.components["media-loader"].data.deskName
+              ) {
+                // Link together the snap object and interactive desk
+                floaty_object.desk = desk;
+              }
+            }
             floaty_object.deskOffsetY =
               floaty_object.object3D.getWorldPosition().y - floaty_object.desk.object3D.getWorldPosition().y;
           }
@@ -412,30 +432,34 @@ export default class SceneEntryManager {
     }
 
     if (!desksAlreadySpawned) {
+      // Spawn the interactive desks
       var spawnedDesks = this.spawnDesks();
       spawnedDesks.forEach(desk => {
         (async () => {
           while (desk.hasLoaded === false) {
             await nextTick();
           }
-
+          // Make desks not draggable
           desk.removeAttribute("draggable");
           desk.removeAttribute("hoverable-visuals");
           desk.removeAttribute("is-remote-hover-target");
+          // move slightly because of offset in desk shape
           desk.object3D.translateZ(-0.01);
           desk.object3D.translateY(0.17);
+          // link together the interactive desk and invisible desk
           desk.invisible_desk = invisible_desks[spawnedDesks.indexOf(desk)];
           desk.YAxisOffset = 0;
-          if (desk.deskType.toLowerCase() == "eow-c") {
+          // If of model EOW-c, hubs centers the object incorrectly so a slight offset has to be done
+          if (desk.components["media-loader"].data.deskType.toLowerCase() == "eow-c") {
             desk.object3D.translateX(0.08);
-            desk.object3D.translateZ(0.08);
+            desk.object3D.translateZ(0.09);
           }
           this.spawnSnapScreens(desk);
         })();
       });
     }
 
-    // -----------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------------------------
   };
 
   whenSceneLoaded = callback => {

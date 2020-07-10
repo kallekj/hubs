@@ -10,19 +10,9 @@ export default class ChatCommandHelp extends Component {
     matchingPrefix: PropTypes.string,
     onTop: PropTypes.bool
   };
-
+  // CUSTOM ADDED commands : "height"
   render() {
-    const commands = [
-      "leave",
-      "grow",
-      "shrink",
-      "duck",
-      "debug",
-      "vrstats",
-      "scene <scene url>",
-      "rename <new name>",
-      "audiomode"
-    ];
+    const commands = ["height", "leave", "debug", "vrstats", "rename <new name>", "audiomode"];
 
     if (window.APP.hubChannel && window.APP.hubChannel.can("fly")) {
       commands.push("fly");

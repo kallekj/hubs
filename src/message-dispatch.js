@@ -60,6 +60,23 @@ export default class MessageDispatch {
           }
         }
         break;
+
+      // -------------------------------- CUSTOM CODE FOR one to be able to set a specific height ---------------------------
+      case "height":
+        if (args[0]) {
+          if (args[0] > 1 && args[0] < 2.5) {
+            avatarRig.object3D.scale.set(
+              args[0] / 1.6 - 0.3 / 1.6,
+              args[0] / 1.6 - 0.3 / 1.6,
+              args[0] / 1.6 - 0.3 / 1.6
+            );
+            avatarRig.object3D.matrixNeedsUpdate = true;
+          } else {
+            this.addToPresenceLog({ type: "log", body: "Please enter a height within 1m - 2.5m" });
+          }
+          break;
+        }
+      // --------------------------------------------------------------------------------------------------------------------
       case "grow":
         for (let i = 0; i < scales.length; i++) {
           if (scales[i] > curScale.x) {

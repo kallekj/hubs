@@ -142,14 +142,15 @@ export class CharacterControllerSystem {
       childMatch(this.avatarRig.object3D, this.avatarPOV.object3D, finalPOV);
     };
   })();
-
+  // ------------------ CUSTOM CODE -------------------------------------------
   distanceToDesk = function(character_pos, desk) {
+    // euclidean distance along x and z axis
     var desk_pos = desk.getWorldPosition();
     var x_distance = character_pos.x - desk_pos.x;
     var z_distance = character_pos.z - desk_pos.z;
     return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
   };
-
+  // -------------------------------------------------------------------------
   tick = (function() {
     const snapRotatedPOV = new THREE.Matrix4();
     const newPOV = new THREE.Matrix4();
