@@ -732,7 +732,7 @@ export const oculusTouchUserBindings = addSetsToBindings({
     
     { 
       src: {
-        bool: leftButton("grip").pressed,
+        //bool: leftButton("grip").pressed,
         value: leftButton("y").pressed
       },
       dest: { value: paths.actions.raiseNearestDesk },
@@ -741,7 +741,7 @@ export const oculusTouchUserBindings = addSetsToBindings({
     },
     {
       src: { 
-        bool: leftButton("grip").pressed,
+        //bool: leftButton("grip").pressed,
         value: leftButton("x").pressed
       },
       dest: { value: paths.actions.lowerNearestDesk },
