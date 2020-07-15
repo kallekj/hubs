@@ -155,6 +155,7 @@ AFRAME.registerComponent("floaty-object", {
             // Snap onto it
             this.snap(this, closestObject);
             this.updateSnapTarget(closestObject);
+            this.el.setAttribute("pinnable", { pinned: true });
             this.snapped = true;
           }
         }
@@ -261,11 +262,21 @@ AFRAME.registerComponent("floaty-object", {
   },
 
   onGrab() {
-    this.el.setAttribute("body-helper", {
-      gravity: { x: 0, y: 0, z: 0 },
-      collisionFilterMask: COLLISION_LAYERS.HANDS
-    });
-    this.setLocked(false);
+    var isDesk = false;
+    if (this.el.components["media-loader"] != null && this.el.components["media-loader"].data.objectType != null) {
+      if (this.el.components["media-loader"].data.objectType == "Interactive_Desk") {
+        isDesk = true;
+        console.log("DESK1");
+      }
+    }
+    if (!isDesk) {
+      console.log("DESK");
+      this.el.setAttribute("body-helper", {
+        gravity: { x: 0, y: 0, z: 0 },
+        collisionFilterMask: COLLISION_LAYERS.HANDS
+      });
+      this.setLocked(false);
+    }
   },
 
   remove() {

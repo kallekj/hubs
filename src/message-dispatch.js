@@ -64,11 +64,44 @@ export default class MessageDispatch {
       // -------------------------------- CUSTOM CODE FOR one to be able to set a specific height ---------------------------
       case "height":
         if (args[0]) {
-          if (args[0] > 1 && args[0] < 2.5) {
+          if (args[0] == "reset") {
+            if (avatarRig.components["player-info"].data.original_scale != null) {
+              avatarRig.object3D.scale.set(
+                avatarRig.components["player-info"].data.original_scale.x,
+                avatarRig.components["player-info"].data.original_scale.y,
+                avatarRig.components["player-info"].data.original_scale.z
+              );
+              avatarRig.object3D.matrixNeedsUpdate = true;
+            }
+            break;
+          } else if (args[0] == "show") {
+            var avatarPOV = document.getElementById("avatar-pov-node");
+            var avatarHeight =
+              avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
+            this.addToPresenceLog({
+              type: "log",
+              body: "Current avatar height :"
+                .concat(Math.round((avatarHeight + 0.3 + Number.EPSILON) * 100) / 100)
+                .concat("m")
+            });
+          } else if (args[0] > 1 && args[0] < 2.5) {
+            // Get the avatar POV
+            var avatarPOV = document.getElementById("avatar-pov-node");
+            // Calculate the current height of the avatar (source of method is a gist made by utophia)
+            var avatarHeight =
+              avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
+
+            var avatarHeightFrac = avatarHeight / avatarRig.object3D.scale.y;
+            if (avatarRig.components["player-info"].data.original_scale == null) {
+              //updateComponent("media-loader", { deskName: desks[i].object3D.name });
+              console.log("test");
+              var start_scale = Object.assign({}, avatarRig.object3D.scale);
+              avatarRig.updateComponent("player-info", { original_scale: start_scale });
+            }
             avatarRig.object3D.scale.set(
-              args[0] / 1.6 - 0.3 / 1.6,
-              args[0] / 1.6 - 0.3 / 1.6,
-              args[0] / 1.6 - 0.3 / 1.6
+              args[0] / avatarHeightFrac - 0.3 / avatarHeightFrac,
+              args[0] / avatarHeightFrac - 0.3 / avatarHeightFrac,
+              args[0] / avatarHeightFrac - 0.3 / avatarHeightFrac
             );
             avatarRig.object3D.matrixNeedsUpdate = true;
           } else {
