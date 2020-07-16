@@ -163,7 +163,7 @@ AFRAME.registerComponent("floaty-object", {
       //------------------------------------------------------------------------------------------
       this.onRelease();
     }
-    // ------------------------------- CUSTOM CODE, CLEAN CODE -----------------------------------
+    // ------------------------------- CUSTOM CODE , COMMENT-----------------------------------
     if (this.el.object3D.name == "SnapObject") {
       if (this.el.object3D.position.y - this.el.deskOffsetY != this.el.desk.object3D.position.y) {
         this.el.object3D.position.y = this.el.desk.object3D.position.y + this.el.deskOffsetY;
