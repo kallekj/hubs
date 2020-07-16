@@ -47,6 +47,8 @@ const SNAP_ROTATION_RADIAN = THREE.Math.DEG2RAD * 45;
 const BASE_SPEED = 3.2; //TODO: in what units?
 export class CharacterControllerSystem {
   constructor(scene) {
+    this.controllerDeskCounter = 0;
+    this.deskTrackController = false;
     this.scene = scene;
     this.fly = false;
     this.shouldLandWhenPossible = false;
@@ -150,6 +152,7 @@ export class CharacterControllerSystem {
     var z_distance = character_pos.z - desk_pos.z;
     return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
   };
+
   // -------------------------------------------------------------------------
   tick = (function() {
     const snapRotatedPOV = new THREE.Matrix4();
@@ -348,6 +351,18 @@ export class CharacterControllerSystem {
       }
 
       // ------------------------------------------CUSTOM------------------------------------
+      var avatarRig = document.querySelector("#avatar-rig");
+      // Chech if controller is put on
+      if (
+        Math.abs(avatarRig.querySelector("#player-left-controller").object3D.rotation.z) > 3 &&
+        avatarRig.querySelector("#player-left-controller").object3D.rotation.x < 0
+      ) {
+        this.controllerDeskCounter += 1;
+      } else {
+        this.controllerDeskCounter = 0;
+        this.deskTrackController = false;
+      }
+
       // Get the floaty objects
       const floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
       // Initiate the list of interactable desks
@@ -369,11 +384,56 @@ export class CharacterControllerSystem {
                 }
               }
             }
-
             interactable_desks.push(floaty_obj);
           }
         }
       }
+
+      if (this.controllerDeskCounter > 200 || this.deskTrackController) {
+        this.controllerDeskCounter = 0;
+        // Get avatar position
+        var avatarPos = avatarRig.object3D.getWorldPosition();
+        // Sort the interactable desks by euclidean distance
+        var sorted_interactable_desks = interactable_desks.sort(function(a, b) {
+          return (
+            Math.sqrt(
+              Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
+                Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
+            ) -
+            Math.sqrt(
+              Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
+                Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
+            )
+          );
+        });
+        // Get the position of the left avatar controller
+        var avatarLeftControllerPos = avatarRig.querySelector("#player-left-controller").object3D.position;
+        // Only raise desk if user is close enough
+        if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
+          // Set tracking flag
+          this.deskTrackController = true;
+          // Desk should not go above 1.402m in height
+          if (avatarLeftControllerPos.y < 1.402 && avatarLeftControllerPos.y > 0.905) {
+            // Check if one has the ownership of the desk
+            const mine = NAF.utils.isMine(sorted_interactable_desks[0]);
+            // If one doesn't have ownership, take ownership
+            // This since one can't move the any object without having ownership of it
+            if (!mine) {
+              NAF.utils.takeOwnership(sorted_interactable_desks[0]);
+            }
+            var difference = avatarLeftControllerPos.y - sorted_interactable_desks[0].object3D.getWorldPosition().y;
+
+            while (Math.abs(difference) > 0.01) {
+              //Change the height of the desk until aligned with controller
+              sorted_interactable_desks[0].object3D.translateY(0.0007 * Math.sign(difference));
+              sorted_interactable_desks[0].currentHeightOffset += 0.0007 * Math.sign(difference);
+              sorted_interactable_desks[0].invisible_desk.object3D.translateY(0.0007 * Math.sign(difference));
+              difference = avatarLeftControllerPos.y - sorted_interactable_desks[0].object3D.getWorldPosition().y;
+            }
+          }
+        }
+      }
+
       // If user wants to raise desk
       if (userinput.get("/actions/raiseNearestDesk")) {
         // Get avatar position
