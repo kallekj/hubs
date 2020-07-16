@@ -354,8 +354,24 @@ export class CharacterControllerSystem {
       var interactable_desks = [];
       // Extract the interactable desks from the list of floaty objects
       for (let floaty_obj of floaty_objects) {
-        if (floaty_obj.object3D.name.substring(0, 16) == "Interactive_Desk") {
-          interactable_desks.push(floaty_obj);
+        if (
+          floaty_obj.components["media-loader"] != null &&
+          floaty_obj.components["media-loader"].data.objectType != null
+        ) {
+          if (floaty_obj.components["media-loader"].data.objectType == "Interactive_Desk") {
+            if (floaty_obj.invisible_desk == null) {
+              var scene_objects = AFRAME.scenes[0].querySelectorAll("[class]");
+              for (let e of scene_objects) {
+                if (e.object3D != null) {
+                  if (e.object3D.name == floaty_obj.components["media-loader"].data.invisibleDeskName) {
+                    floaty_obj.invisible_desk = e;
+                  }
+                }
+              }
+            }
+
+            interactable_desks.push(floaty_obj);
+          }
         }
       }
       // If user wants to raise desk
@@ -430,8 +446,23 @@ export class CharacterControllerSystem {
         }
       }
 
-      //---------------------------------------------------------------------------------------
+      var floaty_objs = document.querySelectorAll("[floaty-object]");
 
+      floaty_objs.forEach(floaty_obj => {
+        if (floaty_obj.object3D != null) {
+          if (floaty_obj.components["media-loader"] != null) {
+            if (
+              floaty_obj.components["media-loader"].data.objectType == "Interactive_Desk" ||
+              floaty_obj.components["media-loader"].data.objectType == "SnapObject"
+            ) {
+              floaty_obj.removeAttribute("draggable");
+              floaty_obj.removeAttribute("hoverable-visuals");
+              floaty_obj.removeAttribute("is-remote-hover-target");
+            }
+          }
+        }
+      });
+      //---------------------------------------------------------------------------------------
       childMatch(this.avatarRig.object3D, this.avatarPOV.object3D, newPOV);
       this.relativeMotion.copy(this.nextRelativeMotion);
       this.dXZ = 0;

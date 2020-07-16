@@ -270,26 +270,6 @@ export default class SceneEntryManager {
     return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
   };
 
-  // floaty_object_is_desk = (floaty_object_position, invisible_desk_position) => {
-  //   var x_distance = floaty_object_position.x - invisible_desk_position.x;
-  //   var z_distance = floaty_object_position.z - invisible_desk_position.z;
-  //   if (Math.sqrt(x_distance * x_distance + z_distance * z_distance) < 0.2) {
-  //     return true;
-  //   }
-  //   return false;
-  // };
-  // findDeskForSnapObject = snapObject => {
-  //   var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
-  //   var desks = [];
-  //   floaty_objects.forEach(floaty_object => {
-  //     if (floaty_object.object3D.name.substring(0, 16) == "Interactive_Desk") {
-  //       desks.push(floaty_object);
-  //     }
-  //   });
-  //   desks.sort((a, b) => this.getEuclideanDistOfX_Z(snapObject, a) - this.getEuclideanDistOfX_Z(snapObject, b));
-  //   return desks[0];
-  // };
-
   // ---------------------------------------------------------------------------------
   enterScene = async (mediaStream, enterInVR, muteOnEntry) => {
     document.getElementById("viewing-camera").removeAttribute("scene-preview-camera");
@@ -457,6 +437,7 @@ export default class SceneEntryManager {
           this.spawnSnapScreens(desk);
         })();
       });
+      
     }
 
     // --------------------------------------------------------------------------------------------------------------------
@@ -475,6 +456,7 @@ export default class SceneEntryManager {
   };
 
   exitScene = () => {
+    console.log("TEST");
     this.scene.exitVR();
     if (NAF.connection.adapter && NAF.connection.adapter.localMediaStream) {
       NAF.connection.adapter.localMediaStream.getTracks().forEach(t => t.stop());
