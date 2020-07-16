@@ -49,6 +49,42 @@ export default class MessageDispatch {
     let physicsSystem;
     const captureSystem = this.scene.systems["capture-system"];
 
+    //---------------------- CUSTOM CODE -------------------------------
+    function loadAssetFromURL(url, position) {
+      var el = document.createElement("a-entity");
+      AFRAME.scenes[0].appendChild(el);
+      el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
+      el.setAttribute("networked", { template: "#interactable-media" });
+      el.setAttribute("position", position);
+      return el;
+    }
+
+    // Credit to Utopiah https://gist.github.com/Utopiah/35407c28fd6ba2c2097d1b589630c53f
+    function getAvatarFromName(name) {
+      for (let a of document.querySelectorAll("[networked-avatar]")) {
+        var el = document.querySelector("#" + a.id);
+        if (name.trim() == el.components["player-info"].displayName.trim()) return el;
+      }
+      return null;
+    }
+
+    function attachObjToAvatar(obj, avatar, avatarPov) {
+      NAF.utils.getNetworkedEntity(obj).then(networkedEl => {
+        const mine = NAF.utils.isMine(networkedEl);
+        if (!mine) var owned = NAF.utils.takeOwnership(networkedEl);
+        // Set the position of the media at the same coordinates as the avatar
+        networkedEl.object3D.position.copy(avatar.object3D.position);
+        // Increase the height to 1.8
+        networkedEl.object3D.position.y += 1.8;
+        // Set the rotation so that the media has the same rotation as the avatar
+        networkedEl.object3D.setRotationFromQuaternion(avatarPov.object3D.getWorldQuaternion());
+        // Move the image back so it's in front of the avatar
+        networkedEl.object3D.translateZ(-2);
+      });
+    }
+
+    //------------------------------------------------------------------
+
     switch (command) {
       case "fly":
         if (this.scene.systems["hubs-systems"].characterController.fly) {
@@ -109,6 +145,36 @@ export default class MessageDispatch {
           }
           break;
         }
+      // ------------------------------ CUSTOM CODE TO SPAWN IMAGE FROM CHAT ------------------------------------------------
+      case "spawnImage":
+        let url, username, theAvatar, avatarPOV;
+        if (args[0]) {
+          url = args[0];
+          if (args[1]) {
+            // Spawn at the username entered
+            username = args[1];
+            theAvatar = getAvatarFromName(username);
+            // Gets the Point of View camera of the user
+            avatarPOV = theAvatar.getElementsByClassName("camera")[0];
+          } else {
+            // If no username is entered, spawn at the user who typed the command
+            username = avatarRig.components["player-info"]["displayName"];
+            theAvatar = getAvatarFromName(username);
+            // Gets the Point of View camera of the user
+            avatarPOV = theAvatar.getElementsByClassName("camera")[0];
+          }
+          // Spawn the image
+          let newImage = loadAssetFromURL(url, "0 0 0");
+          // Move it to the avatar
+          attachObjToAvatar(newImage, theAvatar, avatarPOV);
+        } else {
+          this.addToPresenceLog({
+            type: "log",
+            body: "URL, User: URL to image, Username to spawn image in front of (can be empty)."
+          });
+        }
+
+        break;
       // --------------------------------------------------------------------------------------------------------------------
       case "grow":
         for (let i = 0; i < scales.length; i++) {

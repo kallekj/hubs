@@ -264,6 +264,7 @@
 
 
     "commands.height":"Set specific avatar height between 1m - 2.5m, example : /height 1.8",
+    "commands.spawnImage":"URL, User: URL to image, Username to spawn image in front of (can be empty).",
 
 
 
