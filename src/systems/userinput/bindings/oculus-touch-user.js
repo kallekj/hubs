@@ -729,28 +729,28 @@ export const oculusTouchUserBindings = addSetsToBindings({
     //---------------------------------------------------------------------------------------------------------
     // |                                              Custom                                                  |
     // --------------------------------------------------------------------------------------------------------
-    
-    { 
+
+    {
       src: {
         //bool: leftButton("grip").pressed,
-        value: leftButton("y").pressed
+        value: leftButton("b").pressed
       },
       dest: { value: paths.actions.raiseNearestDesk },
       xform: xforms.value,
-      priority: 1
+      priority: 2
     },
     {
-      src: { 
+      src: {
         //bool: leftButton("grip").pressed,
-        value: leftButton("x").pressed
+        value: leftButton("a").pressed
       },
       dest: { value: paths.actions.lowerNearestDesk },
       xform: xforms.value,
-      priority: 1  
+      priority: 2
     }
-  //---------------------------------------------------------------------------------------------------------
-  // |                                             End Custom                                               |
-  // --------------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------------
+    // |                                             End Custom                                               |
+    // --------------------------------------------------------------------------------------------------------
   ],
 
   [sets.leftHandHoveringOnNothing]: [
