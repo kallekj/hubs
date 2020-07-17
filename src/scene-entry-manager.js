@@ -442,6 +442,10 @@ export default class SceneEntryManager {
       });
     }
 
+    const avatarPOV = document.getElementById("avatar-pov-node");
+    var avatarHeight = avatarPOV.object3D.matrixWorld.elements[13] - this.avatarRig.object3D.matrixWorld.elements[13];
+    this.avatarRig.initialHeight = Math.round((avatarHeight + Number.EPSILON) * 100) / 100;
+
     // --------------------------------------------------------------------------------------------------------------------
   };
 

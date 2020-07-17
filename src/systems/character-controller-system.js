@@ -152,6 +152,28 @@ export class CharacterControllerSystem {
     var z_distance = character_pos.z - desk_pos.z;
     return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
   };
+  getClosestDesk = function(avatarPos, deskList) {
+    // Sort the interactable desks by euclidean distance
+    var sorted_interactable_desks = deskList.sort(function(a, b) {
+      return (
+        Math.sqrt(
+          Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
+            Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
+        ) -
+        Math.sqrt(
+          Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
+            Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
+        )
+      );
+    });
+    return sorted_interactable_desks[0];
+  };
+
+  raiseDesk = (desk, deltaPos) => {
+    desk.object3D.translateY(deltaPos);
+    desk.currentHeightOffset += deltaPos;
+    desk.invisible_desk.object3D.translateY(deltaPos);
+  };
 
   // -------------------------------------------------------------------------
   tick = (function() {
@@ -388,47 +410,41 @@ export class CharacterControllerSystem {
           }
         }
       }
-
+      var closestDesk = null;
       if (this.controllerDeskCounter > 200 || this.deskTrackController) {
         this.controllerDeskCounter = 0;
         // Get avatar position
         var avatarPos = avatarRig.object3D.getWorldPosition();
-        // Sort the interactable desks by euclidean distance
-        var sorted_interactable_desks = interactable_desks.sort(function(a, b) {
-          return (
-            Math.sqrt(
-              Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
-                Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
-            ) -
-            Math.sqrt(
-              Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
-                Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
-            )
-          );
-        });
+        // Get the closest desk
+
+        closestDesk = this.getClosestDesk(avatarPos, interactable_desks);
         // Get the position of the left avatar controller
-        var avatarLeftControllerPos = avatarRig.querySelector("#player-left-controller").object3D.position;
+
+        var avatarLeftControllerPos = Object.assign(
+          {},
+          avatarRig.querySelector("#player-left-controller").object3D.getWorldPosition()
+        );
+        avatarLeftControllerPos.y += 0.08;
         // Only raise desk if user is close enough
-        if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
+        if (this.distanceToDesk(avatarPos, closestDesk.object3D) < 2) {
           // Set tracking flag
           this.deskTrackController = true;
           // Desk should not go above 1.402m in height
           if (avatarLeftControllerPos.y < 1.402 && avatarLeftControllerPos.y > 0.905) {
             // Check if one has the ownership of the desk
-            const mine = NAF.utils.isMine(sorted_interactable_desks[0]);
+            const mine = NAF.utils.isMine(closestDesk);
             // If one doesn't have ownership, take ownership
             // This since one can't move the any object without having ownership of it
             if (!mine) {
-              NAF.utils.takeOwnership(sorted_interactable_desks[0]);
+              NAF.utils.takeOwnership(closestDesk);
             }
-            var difference = avatarLeftControllerPos.y - sorted_interactable_desks[0].object3D.getWorldPosition().y;
+            var difference = avatarLeftControllerPos.y - closestDesk.object3D.getWorldPosition().y;
 
             while (Math.abs(difference) > 0.01) {
               //Change the height of the desk until aligned with controller
-              sorted_interactable_desks[0].object3D.translateY(0.0007 * Math.sign(difference));
-              sorted_interactable_desks[0].currentHeightOffset += 0.0007 * Math.sign(difference);
-              sorted_interactable_desks[0].invisible_desk.object3D.translateY(0.0007 * Math.sign(difference));
-              difference = avatarLeftControllerPos.y - sorted_interactable_desks[0].object3D.getWorldPosition().y;
+              this.raiseDesk(closestDesk, 0.0007 * Math.sign(difference));
+
+              difference = avatarLeftControllerPos.y - closestDesk.object3D.getWorldPosition().y;
             }
           }
         }
@@ -438,35 +454,22 @@ export class CharacterControllerSystem {
       if (userinput.get("/actions/raiseNearestDesk")) {
         // Get avatar position
         var avatarPos = this.avatarRig.object3D.getWorldPosition();
-        // Sort the interactable desks by euclidean distance
-        var sorted_interactable_desks = interactable_desks.sort(function(a, b) {
-          return (
-            Math.sqrt(
-              Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
-                Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
-            ) -
-            Math.sqrt(
-              Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
-                Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
-            )
-          );
-        });
+        // Get the closest desk
+        closestDesk = this.getClosestDesk(avatarPos, interactable_desks);
 
         // Only raise desk if user is close enough
-        if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
+        if (this.distanceToDesk(avatarPos, closestDesk.object3D) < 1) {
           // Desk should not go above 1.402m in height
-          if (sorted_interactable_desks[0].object3D.getWorldPosition().y < 1.402) {
+          if (closestDesk.object3D.getWorldPosition().y < 1.402) {
             // Check if one has the ownership of the desk
-            const mine = NAF.utils.isMine(sorted_interactable_desks[0]);
+            const mine = NAF.utils.isMine(closestDesk);
             // If one doesn't have ownership, take ownership
             // This since one can't move the any object without having ownership of it
             if (!mine) {
-              NAF.utils.takeOwnership(sorted_interactable_desks[0]);
+              NAF.utils.takeOwnership(closestDesk);
             }
             //Raise interactable desk and the collidable invisible desk
-            sorted_interactable_desks[0].object3D.translateY(0.0007);
-            sorted_interactable_desks[0].currentHeightOffset += 0.0007;
-            sorted_interactable_desks[0].invisible_desk.object3D.translateY(0.0007);
+            this.raiseDesk(closestDesk, 0.0007);
           }
         }
       }
@@ -474,34 +477,21 @@ export class CharacterControllerSystem {
       else if (userinput.get("/actions/lowerNearestDesk")) {
         // Get avatar position
         var avatarPos = this.avatarRig.object3D.getWorldPosition();
-        // Sort the interactable desks by euclidean distance
-        var sorted_interactable_desks = interactable_desks.sort(function(a, b) {
-          return (
-            Math.sqrt(
-              Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
-                Math.pow(avatarPos.z - a.object3D.getWorldPosition().z, 2)
-            ) -
-            Math.sqrt(
-              Math.pow(avatarPos.x - b.object3D.getWorldPosition().x, 2) +
-                Math.pow(avatarPos.z - b.object3D.getWorldPosition().z, 2)
-            )
-          );
-        });
+        // Get the closest desk
+        closestDesk = this.getClosestDesk(avatarPos, interactable_desks);
         // Only lower desk if user is close enough
-        if (this.distanceToDesk(avatarPos, sorted_interactable_desks[0].object3D) < 1) {
+        if (this.distanceToDesk(avatarPos, closestDesk.object3D) < 1) {
           // Desk should not go below 0.905m in height
-          if (sorted_interactable_desks[0].object3D.getWorldPosition().y > 0.905) {
+          if (closestDesk.object3D.getWorldPosition().y > 0.905) {
             // Check if one has the ownership of the desk
-            const mine = NAF.utils.isMine(sorted_interactable_desks[0]);
+            const mine = NAF.utils.isMine(closestDesk);
             // If one doesn't have ownership, take ownership
             // This since one can't move the any object without having ownership of it
             if (!mine) {
-              NAF.utils.takeOwnership(sorted_interactable_desks[0]);
+              NAF.utils.takeOwnership(closestDesk);
             }
             //Lower interactable desk and the collidable invisible desk
-            sorted_interactable_desks[0].object3D.translateY(-0.0007);
-            sorted_interactable_desks[0].currentHeightOffset -= 0.0007;
-            sorted_interactable_desks[0].invisible_desk.object3D.translateY(-0.0007);
+            this.raiseDesk(closestDesk, -0.0007);
           }
         }
       }

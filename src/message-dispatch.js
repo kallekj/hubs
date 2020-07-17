@@ -84,6 +84,24 @@ export default class MessageDispatch {
       });
     }
 
+    function setAvatarToHeight(avatar_rig, avatar_pov, newHeight) {
+      var avatarHeight = avatar_pov.object3D.matrixWorld.elements[13] - avatar_rig.object3D.matrixWorld.elements[13];
+
+      var avatarHeightFrac = avatarHeight / avatar_rig.object3D.scale.y;
+      if (avatar_rig.components["player-info"].data.original_scale == null) {
+        //updateComponent("media-loader", { deskName: desks[i].object3D.name });
+        console.log("test");
+        var start_scale = Object.assign({}, avatar_rig.object3D.scale);
+        avatar_rig.updateComponent("player-info", { original_scale: start_scale });
+      }
+      avatar_rig.object3D.scale.set(
+        newHeight / avatarHeightFrac - 0.3 / avatarHeightFrac,
+        newHeight / avatarHeightFrac - 0.3 / avatarHeightFrac,
+        newHeight / avatarHeightFrac - 0.3 / avatarHeightFrac
+      );
+      avatar_rig.object3D.matrixNeedsUpdate = true;
+    }
+
     //------------------------------------------------------------------
 
     switch (command) {
@@ -122,22 +140,7 @@ export default class MessageDispatch {
             });
           } else if (args[0] > 1 && args[0] < 2.5) {
             // Calculate the current height of the avatar (source of method is a gist made by utophia)
-            var avatarHeight =
-              avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
-
-            var avatarHeightFrac = avatarHeight / avatarRig.object3D.scale.y;
-            if (avatarRig.components["player-info"].data.original_scale == null) {
-              //updateComponent("media-loader", { deskName: desks[i].object3D.name });
-              console.log("test");
-              var start_scale = Object.assign({}, avatarRig.object3D.scale);
-              avatarRig.updateComponent("player-info", { original_scale: start_scale });
-            }
-            avatarRig.object3D.scale.set(
-              args[0] / avatarHeightFrac - 0.3 / avatarHeightFrac,
-              args[0] / avatarHeightFrac - 0.3 / avatarHeightFrac,
-              args[0] / avatarHeightFrac - 0.3 / avatarHeightFrac
-            );
-            avatarRig.object3D.matrixNeedsUpdate = true;
+            setAvatarToHeight(avatarRig, avatarPOV, args[0]);
           } else {
             this.addToPresenceLog({ type: "log", body: "Please enter a height within 1m - 2.5m" });
           }
