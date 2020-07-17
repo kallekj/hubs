@@ -380,6 +380,7 @@ export default class SceneEntryManager {
           floaty_object.removeAttribute("draggable");
           floaty_object.removeAttribute("hoverable-visuals");
           floaty_object.removeAttribute("is-remote-hover-target");
+          floaty_object.updateComponent("tags", { isHoldable: false });
           interactive_desks.push(floaty_object);
         }
       }
@@ -395,6 +396,7 @@ export default class SceneEntryManager {
             floaty_object.removeAttribute("draggable");
             floaty_object.removeAttribute("hoverable-visuals");
             floaty_object.removeAttribute("is-remote-hover-target");
+
             // Find the corresponding interactive desk of the snap object
             for (let desk of interactive_desks) {
               if (
@@ -423,6 +425,7 @@ export default class SceneEntryManager {
           desk.removeAttribute("draggable");
           desk.removeAttribute("hoverable-visuals");
           desk.removeAttribute("is-remote-hover-target");
+          desk.updateComponent("tags", { isHoldable: false });
           // move slightly because of offset in desk shape
           desk.object3D.translateZ(-0.01);
           desk.object3D.translateY(0.17);
@@ -437,7 +440,6 @@ export default class SceneEntryManager {
           this.spawnSnapScreens(desk);
         })();
       });
-      
     }
 
     // --------------------------------------------------------------------------------------------------------------------
