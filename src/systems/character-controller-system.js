@@ -440,7 +440,7 @@ export class CharacterControllerSystem {
             }
             var difference = avatarLeftControllerPos.y - closestDesk.object3D.getWorldPosition().y;
 
-            while (Math.abs(difference) > 0.01) {
+            while (Math.abs(difference) > 0.001) {
               //Change the height of the desk until aligned with controller
               this.raiseDesk(closestDesk, 0.0007 * Math.sign(difference));
 
