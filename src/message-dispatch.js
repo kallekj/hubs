@@ -112,17 +112,15 @@ export default class MessageDispatch {
             }
             break;
           } else if (args[0] == "show") {
-            
             var avatarHeight =
               avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
             this.addToPresenceLog({
               type: "log",
-              body: "Current avatar height :"
+              body: "Current avatar height : "
                 .concat(Math.round((avatarHeight + 0.3 + Number.EPSILON) * 100) / 100)
                 .concat("m")
             });
           } else if (args[0] > 1 && args[0] < 2.5) {
-            
             // Calculate the current height of the avatar (source of method is a gist made by utophia)
             var avatarHeight =
               avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
