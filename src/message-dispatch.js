@@ -147,7 +147,7 @@ export default class MessageDispatch {
         }
       // ------------------------------ CUSTOM CODE TO SPAWN IMAGE FROM CHAT ------------------------------------------------
       case "spawnImage":
-        let url, username, theAvatar, avatarPOV;
+        let url, username, theAvatar, theAvatarPOV;
         if (args[0]) {
           url = args[0];
           if (args[1]) {
@@ -155,18 +155,18 @@ export default class MessageDispatch {
             username = args[1];
             theAvatar = getAvatarFromName(username);
             // Gets the Point of View camera of the user
-            avatarPOV = theAvatar.getElementsByClassName("camera")[0];
+            theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
           } else {
             // If no username is entered, spawn at the user who typed the command
             username = avatarRig.components["player-info"]["displayName"];
             theAvatar = getAvatarFromName(username);
             // Gets the Point of View camera of the user
-            avatarPOV = theAvatar.getElementsByClassName("camera")[0];
+            theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
           }
           // Spawn the image
           let newImage = loadAssetFromURL(url, "0 0 0");
           // Move it to the avatar
-          attachObjToAvatar(newImage, theAvatar, avatarPOV);
+          attachObjToAvatar(newImage, theAvatar, theAvatarPOV);
         } else {
           this.addToPresenceLog({
             type: "log",
