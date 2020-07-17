@@ -43,6 +43,7 @@ export default class MessageDispatch {
     }
 
     const avatarRig = document.querySelector("#avatar-rig");
+    const avatarPOV = document.getElementById("avatar-pov-node");
     const scales = [0.0625, 0.125, 0.25, 0.5, 1.0, 1.5, 3, 5, 7.5, 12.5];
     const curScale = avatarRig.object3D.scale;
     let err;
@@ -111,7 +112,7 @@ export default class MessageDispatch {
             }
             break;
           } else if (args[0] == "show") {
-            var avatarPOV = document.getElementById("avatar-pov-node");
+            
             var avatarHeight =
               avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
             this.addToPresenceLog({
@@ -121,8 +122,7 @@ export default class MessageDispatch {
                 .concat("m")
             });
           } else if (args[0] > 1 && args[0] < 2.5) {
-            // Get the avatar POV
-            var avatarPOV = document.getElementById("avatar-pov-node");
+            
             // Calculate the current height of the avatar (source of method is a gist made by utophia)
             var avatarHeight =
               avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
