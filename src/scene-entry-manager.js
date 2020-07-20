@@ -55,7 +55,7 @@ export default class SceneEntryManager {
   };
   // ------------------------------- CUSTOM CODE ------------------------------------
   loadAssetFromURL = (url, position) => {
-    var el = document.createElement("a-entity");
+    const el = document.createElement("a-entity");
     AFRAME.scenes[0].appendChild(el);
     el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
     el.setAttribute("networked", { template: "#interactable-media" });
@@ -65,20 +65,20 @@ export default class SceneEntryManager {
 
   spawnDesks = () => {
     // Spawn the desk and position it
-    var g = AFRAME.scenes[0].querySelectorAll("[class]");
-    var deskGroups = [];
+    const g = AFRAME.scenes[0].querySelectorAll("[class]");
+    const deskGroups = [];
     for (let e of g) {
       if (e.className.substring(0, 10) == "Desk_Group") {
         deskGroups.push(e);
       }
     }
-    var desks = [];
-    var targets = [];
+    const desks = [];
+    const targets = [];
     for (let deskGroup of deskGroups) {
       for (let deskGroupChild of deskGroup.object3D.children) {
         // Find the invisible desks to link with
         if (deskGroupChild.name.substring(0, 14) == "Invisible_Desk") {
-          var deskType = deskGroupChild.name.substring(15, deskGroupChild.name.length - 2);
+          const deskType = deskGroupChild.name.substring(15, deskGroupChild.name.length - 2);
           var newDeskPosition = Object.assign({}, deskGroupChild.el.object3D.getWorldPosition());
           // Load desk at correct position
           var newDesk = this.loadAssetFromURL(this.deskURLs[deskType.toLowerCase()], newDeskPosition);
@@ -202,7 +202,7 @@ export default class SceneEntryManager {
   }
 
   spawnSnapScreens = async desk => {
-    const tempURL = "https://uploads-prod.reticulum.io/files/5c7f364e-10b7-46d6-81bf-afd63ff10a4b.png";
+    const tempURL = "https://uploads-prod.reticulum.io/files/f1e8b354-6c4d-4b3a-b812-31a3571bf58d.png";
     // Get the correct position offset and scale of the snap objects for the current desk
     var snapObjectOffsets = this.getScreenOffsetsForDesk(desk.components["media-loader"].data.deskType);
     var snapObjectScales = this.getScreenScalesForDesk(desk.components["media-loader"].data.deskType);
