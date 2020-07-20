@@ -155,8 +155,17 @@ export default class MessageDispatch {
             // Spawn at the username entered
             username = args[1];
             theAvatar = getAvatarFromName(username);
-            // Gets the Point of View camera of the user
-            theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
+            // Check if the avatar exists
+            if (theAvatar) {
+              // Gets the Point of View camera of the user
+              theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
+            } else {
+              this.addToPresenceLog({
+                type: "log",
+                body: "Error: Can't find username."
+              });
+              break;
+            }
           } else {
             // If no username is entered, spawn at the user who typed the command
             username = avatarRig.components["player-info"]["displayName"];
@@ -171,7 +180,7 @@ export default class MessageDispatch {
         } else {
           this.addToPresenceLog({
             type: "log",
-            body: "URL, User: URL to image, Username to spawn image in front of (can be empty)."
+            body: "Error: You must enter a URL to media."
           });
         }
 
