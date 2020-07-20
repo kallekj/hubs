@@ -52,7 +52,7 @@ export default class MessageDispatch {
 
     //---------------------- CUSTOM CODE -------------------------------
     function loadAssetFromURL(url, position) {
-      var el = document.createElement("a-entity");
+      const el = document.createElement("a-entity");
       AFRAME.scenes[0].appendChild(el);
       el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
       el.setAttribute("networked", { template: "#interactable-media" });
@@ -62,8 +62,8 @@ export default class MessageDispatch {
 
     // Credit to Utopiah https://gist.github.com/Utopiah/35407c28fd6ba2c2097d1b589630c53f
     function getAvatarFromName(name) {
-      for (let a of document.querySelectorAll("[networked-avatar]")) {
-        var el = document.querySelector("#" + a.id);
+      for (const a of document.querySelectorAll("[networked-avatar]")) {
+        const el = document.querySelector("#" + a.id);
         if (name.trim() == el.components["player-info"].displayName.trim()) return el;
       }
       return null;
@@ -85,13 +85,13 @@ export default class MessageDispatch {
     }
 
     function setAvatarToHeight(avatar_rig, avatar_pov, newHeight) {
-      var avatarHeight = avatar_pov.object3D.matrixWorld.elements[13] - avatar_rig.object3D.matrixWorld.elements[13];
+      const avatarHeight = avatar_pov.object3D.matrixWorld.elements[13] - avatar_rig.object3D.matrixWorld.elements[13];
 
-      var avatarHeightFrac = avatarHeight / avatar_rig.object3D.scale.y;
+      const avatarHeightFrac = avatarHeight / avatar_rig.object3D.scale.y;
       if (avatar_rig.components["player-info"].data.original_scale == null) {
         //updateComponent("media-loader", { deskName: desks[i].object3D.name });
         console.log("test");
-        var start_scale = Object.assign({}, avatar_rig.object3D.scale);
+        const start_scale = Object.assign({}, avatar_rig.object3D.scale);
         avatar_rig.updateComponent("player-info", { original_scale: start_scale });
       }
       avatar_rig.object3D.scale.set(
@@ -130,7 +130,7 @@ export default class MessageDispatch {
             }
             break;
           } else if (args[0] == "show") {
-            var avatarHeight =
+            const avatarHeight =
               avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
             this.addToPresenceLog({
               type: "log",
@@ -146,8 +146,9 @@ export default class MessageDispatch {
           }
           break;
         }
+        break;
       // ------------------------------ CUSTOM CODE TO SPAWN IMAGE FROM CHAT ------------------------------------------------
-      case "spawnImage":
+      case "spawnImage": {
         let url, username, theAvatar, theAvatarPOV;
         if (args[0]) {
           url = args[0];
@@ -160,10 +161,7 @@ export default class MessageDispatch {
               // Gets the Point of View camera of the user
               theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
             } else {
-              this.addToPresenceLog({
-                type: "log",
-                body: "Error: Can't find username."
-              });
+              this.addToPresenceLog({ type: "log", body: "Error: Can't find username." });
               break;
             }
           } else {
@@ -174,17 +172,14 @@ export default class MessageDispatch {
             theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
           }
           // Spawn the image
-          let newImage = loadAssetFromURL(url, "0 0 0");
+          const newImage = loadAssetFromURL(url, "0 0 0");
           // Move it to the avatar
           attachObjToAvatar(newImage, theAvatar, theAvatarPOV);
         } else {
-          this.addToPresenceLog({
-            type: "log",
-            body: "Error: You must enter a URL to media."
-          });
+          this.addToPresenceLog({ type: "log", body: "Error: You must enter a URL to media." });
         }
-
         break;
+      }
       // --------------------------------------------------------------------------------------------------------------------
       case "grow":
         for (let i = 0; i < scales.length; i++) {
