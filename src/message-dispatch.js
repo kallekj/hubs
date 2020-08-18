@@ -52,7 +52,7 @@ export default class MessageDispatch {
 
     //---------------------- CUSTOM CODE -------------------------------
     function loadAssetFromURL(url, position) {
-      var el = document.createElement("a-entity");
+      const el = document.createElement("a-entity");
       AFRAME.scenes[0].appendChild(el);
       el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
       el.setAttribute("networked", { template: "#interactable-media" });
@@ -63,7 +63,7 @@ export default class MessageDispatch {
     // Credit to Utopiah https://gist.github.com/Utopiah/35407c28fd6ba2c2097d1b589630c53f
     function getAvatarFromName(name) {
       for (let a of document.querySelectorAll("[networked-avatar]")) {
-        var el = document.querySelector("#" + a.id);
+        const el = document.querySelector("#" + a.id);
         if (name.trim() == el.components["player-info"].displayName.trim()) return el;
       }
       return null;
@@ -85,13 +85,13 @@ export default class MessageDispatch {
     }
 
     function setAvatarToHeight(avatar_rig, avatar_pov, newHeight) {
-      var avatarHeight = avatar_pov.object3D.matrixWorld.elements[13] - avatar_rig.object3D.matrixWorld.elements[13];
+      const avatarHeight = avatar_pov.object3D.matrixWorld.elements[13] - avatar_rig.object3D.matrixWorld.elements[13];
 
-      var avatarHeightFrac = avatarHeight / avatar_rig.object3D.scale.y;
+      const avatarHeightFrac = avatarHeight / avatar_rig.object3D.scale.y;
       if (avatar_rig.components["player-info"].data.original_scale == null) {
         //updateComponent("media-loader", { deskName: desks[i].object3D.name });
         console.log("test");
-        var start_scale = Object.assign({}, avatar_rig.object3D.scale);
+        const start_scale = Object.assign({}, avatar_rig.object3D.scale);
         avatar_rig.updateComponent("player-info", { original_scale: start_scale });
       }
       avatar_rig.object3D.scale.set(
@@ -130,7 +130,7 @@ export default class MessageDispatch {
             }
             break;
           } else if (args[0] == "show") {
-            var avatarHeight =
+            const avatarHeight =
               avatarPOV.object3D.matrixWorld.elements[13] - avatarRig.object3D.matrixWorld.elements[13];
             this.addToPresenceLog({
               type: "log",
@@ -146,6 +146,7 @@ export default class MessageDispatch {
           }
           break;
         }
+        break;
       // ------------------------------ CUSTOM CODE TO SPAWN IMAGE FROM CHAT ------------------------------------------------
       case "spawnImage":
         let url, username, theAvatar, theAvatarPOV;
@@ -174,7 +175,7 @@ export default class MessageDispatch {
             theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
           }
           // Spawn the image
-          let newImage = loadAssetFromURL(url, "0 0 0");
+          const newImage = loadAssetFromURL(url, "0 0 0");
           // Move it to the avatar
           attachObjToAvatar(newImage, theAvatar, theAvatarPOV);
         } else {
@@ -186,6 +187,58 @@ export default class MessageDispatch {
 
         break;
       // --------------------------------------------------------------------------------------------------------------------
+      // -----------------------------------------CUSTOM CODE TO LET ONE SEE DISTANCE TO SHARED SCREENS----------------------
+      case "distanceToScreen":
+        const media_loaders = AFRAME.scenes[0].querySelectorAll("[media-video]");
+        let selectedScreen = null;
+        let selectedAvatar = avatarRig;
+
+        // If user desires to get distance between another user and their screen
+        if (args[0]) {
+          selectedAvatar = getAvatarFromName(args[0]);
+          if (selectedAvatar == null) {
+            this.addToPresenceLog({
+              type: "log",
+              body: "Could not find player named: ".concat(args[0])
+            });
+            break;
+          }
+          for (let media_loader of media_loaders) {
+            // Find the screen belonging to the user
+            const creatorID = NAF.utils.getCreator(media_loader);
+            if (selectedAvatar.components["player-info"].playerSessionId === creatorID) {
+              selectedScreen = media_loader;
+            }
+          }
+        }
+        // If user desires to get distance to their own screen
+        else {
+          for (let media_loader of media_loaders) {
+            const creatorID = NAF.utils.getCreator(media_loader);
+            if (selectedAvatar.components["player-info"].playerSessionId === creatorID) {
+              selectedScreen = media_loader;
+            }
+          }
+        }
+        if (selectedScreen == null || selectedAvatar == null) break;
+        // To get the correnct height, use the camera of the user
+        let selecterAvatarCamera;
+        for (let child of selectedAvatar.getChildren()) {
+          if (child.className == "camera") selecterAvatarCamera = child;
+        }
+        // Calculate the distance and turn it into centimeters
+        let distance = selecterAvatarCamera.object3D
+          .getWorldPosition()
+          .distanceTo(selectedScreen.object3D.getWorldPosition());
+        distance = Math.round(distance * 100);
+
+        this.addToPresenceLog({
+          type: "log",
+          body: "Distance: ".concat(distance).concat(" cm")
+        });
+        break;
+
+      // -------------------------------------------------------------------------------------------------------------------
       case "grow":
         for (let i = 0; i < scales.length; i++) {
           if (scales[i] > curScale.x) {
