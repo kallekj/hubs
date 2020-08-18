@@ -62,7 +62,7 @@ export default class MessageDispatch {
 
     // Credit to Utopiah https://gist.github.com/Utopiah/35407c28fd6ba2c2097d1b589630c53f
     function getAvatarFromName(name) {
-      for (let a of document.querySelectorAll("[networked-avatar]")) {
+      for (const a of document.querySelectorAll("[networked-avatar]")) {
         const el = document.querySelector("#" + a.id);
         if (name.trim() == el.components["player-info"].displayName.trim()) return el;
       }
@@ -148,7 +148,7 @@ export default class MessageDispatch {
         }
         break;
       // ------------------------------ CUSTOM CODE TO SPAWN IMAGE FROM CHAT ------------------------------------------------
-      case "spawnImage":
+      case "spawnImage": {
         let url, username, theAvatar, theAvatarPOV;
         if (args[0]) {
           url = args[0];
@@ -161,10 +161,7 @@ export default class MessageDispatch {
               // Gets the Point of View camera of the user
               theAvatarPOV = theAvatar.getElementsByClassName("camera")[0];
             } else {
-              this.addToPresenceLog({
-                type: "log",
-                body: "Error: Can't find username."
-              });
+              this.addToPresenceLog({ type: "log", body: "Error: Can't find username." });
               break;
             }
           } else {
@@ -179,13 +176,10 @@ export default class MessageDispatch {
           // Move it to the avatar
           attachObjToAvatar(newImage, theAvatar, theAvatarPOV);
         } else {
-          this.addToPresenceLog({
-            type: "log",
-            body: "Error: You must enter a URL to media."
-          });
+          this.addToPresenceLog({ type: "log", body: "Error: You must enter a URL to media." });
         }
-
         break;
+      }
       // --------------------------------------------------------------------------------------------------------------------
       // -----------------------------------------CUSTOM CODE TO LET ONE SEE DISTANCE TO SHARED SCREENS----------------------
       case "distanceToScreen":
