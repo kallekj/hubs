@@ -89,8 +89,6 @@ export default class MessageDispatch {
 
       const avatarHeightFrac = avatarHeight / avatar_rig.object3D.scale.y;
       if (avatar_rig.components["player-info"].data.original_scale == null) {
-        //updateComponent("media-loader", { deskName: desks[i].object3D.name });
-        console.log("test");
         const start_scale = Object.assign({}, avatar_rig.object3D.scale);
         avatar_rig.updateComponent("player-info", { original_scale: start_scale });
       }

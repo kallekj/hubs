@@ -47,7 +47,7 @@ export class AdjustableDeskSpawner {
         }
       }
     }
-    for (var i = 0; i < desks.length; i++) {
+    for (let i = 0; i < desks.length; i++) {
       // Set rotation for desks
       desks[i].object3D.setRotationFromQuaternion(targets[i].el.object3D.getWorldQuaternion());
       desks[i].object3D.name = "Interactive_Desk_".concat(i);
@@ -159,7 +159,16 @@ export class AdjustableDeskSpawner {
   }
 
   spawnSnapScreens = async desk => {
+    const Eow_cImageURLs = [
+      "https://uploads-prod.reticulum.io/files/8b5e4d89-a7d6-43d7-af89-8347630196cd.png",
+      "https://uploads-prod.reticulum.io/files/8b5e4d89-a7d6-43d7-af89-8347630196cd.png",
+      "https://uploads-prod.reticulum.io/files/dffdc170-2336-41ac-ab2c-876d6ffc227f.png",
+      "https://uploads-prod.reticulum.io/files/b90815c5-838e-4eac-9aed-fdd07891681c.png",
+      "https://uploads-prod.reticulum.io/files/b2be34b4-4287-4efa-8225-be0af3036eec.png",
+      "https://uploads-prod.reticulum.io/files/dffdc170-2336-41ac-ab2c-876d6ffc227f.png"
+    ];
     const tempURL = "https://uploads-prod.reticulum.io/files/f1e8b354-6c4d-4b3a-b812-31a3571bf58d.png";
+
     // Get the correct position offset and scale of the snap objects for the current desk
     const snapObjectOffsets = this.getScreenOffsetsForDesk(desk.components["media-loader"].data.deskType);
     const snapObjectScales = this.getScreenScalesForDesk(desk.components["media-loader"].data.deskType);
@@ -168,7 +177,12 @@ export class AdjustableDeskSpawner {
       const deskPosition = Object.assign({}, desk.object3D.getWorldPosition());
 
       snapObjectOffsets.forEach(snapOffset => {
-        const snapObject = this.loadAssetFromURL(tempURL, deskPosition);
+        let snapObject;
+        if (desk.components["media-loader"].data.deskType.toLowerCase() != "eow-c") {
+          snapObject = this.loadAssetFromURL(tempURL, deskPosition);
+        } else {
+          snapObject = this.loadAssetFromURL(Eow_cImageURLs[snapObjectOffsets.indexOf(snapOffset)], deskPosition);
+        }
 
         (async () => {
           while (snapObject.hasLoaded === false) {
@@ -186,6 +200,7 @@ export class AdjustableDeskSpawner {
               // Since EOW-c has both big and small monitors
               if (snapOffset.posY > 0.6) {
                 // Set correct scale for snap object
+
                 snapObject.object3D.scale.x = snapObjectScales[0].x;
                 snapObject.object3D.scale.y = snapObjectScales[0].y;
                 snapObject.object3D.scale.z = snapObjectScales[0].z;
@@ -315,7 +330,8 @@ export class AdjustableDeskSpawner {
           // If of model EOW-c, hubs centers the object incorrectly so a slight offset has to be done
           if (desk.components["media-loader"].data.deskType.toLowerCase() == "eow-c") {
             desk.object3D.translateX(0.08);
-            desk.object3D.translateZ(0.09);
+            desk.object3D.translateZ(0.21);
+            
           }
 
           desk.updateComponent("body-helper", { collisionFilterMask: 0 });
