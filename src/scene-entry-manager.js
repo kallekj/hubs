@@ -131,6 +131,11 @@ export default class SceneEntryManager {
     // ----------------------- CUSTOM --------------
     this.adjustableDeskSpawner.spawnOrFindDesks();
     // ---------------------------------------------
+    // ----------------------- CUSTOM --------------
+    const clock = document.createElement("a-entity");
+    AFRAME.scenes[0].appendChild(clock);
+    clock.setAttribute("digital-clock");
+    // ---------------------------------------------
   };
 
   whenSceneLoaded = callback => {
