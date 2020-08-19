@@ -346,7 +346,20 @@ export default class SceneEntryManager {
     if (muteOnEntry) {
       this.scene.emit("action_mute");
     }
-
+    // ----------------------- CUSTOM -----------------------------------------------------------------------------
+    // loadAssetFromURL = (url, position) => {
+    //   const el = document.createElement("a-entity");
+    //   AFRAME.scenes[0].appendChild(el);
+    //   el.setAttribute("media-loader", { src: url, fitToBox: false, resolve: true });
+    //   el.setAttribute("networked", { template: "#interactable-media" });
+    //   el.setAttribute("position", position);
+    //   return el;
+    // };
+    const clock = document.createElement("a-entity");
+    AFRAME.scenes[0].appendChild(clock);
+    clock.setAttribute("digital-clock");
+    //clock.setAttribute("position", )
+    // ------------------------------------------------------------------------------------------------------------
     // ----------------------- CUSTOM -----------------------------------------------------------------------------
     var floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
 
