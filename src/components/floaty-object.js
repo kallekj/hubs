@@ -31,7 +31,7 @@ AFRAME.registerComponent("floaty-object", {
     this.snapobjects = [];
     this.currentTick = 0;
     this.currentSnapTarget = 0;
-    var i = 0;
+    let i = 0;
     for (i = 0; i < this.media_loaders.length; i++) {
       // If the object to snap onto has a 3D object
       if (this.media_loaders[i].object3D != null) {
@@ -53,11 +53,13 @@ AFRAME.registerComponent("floaty-object", {
     toSnap.el.object3D.scale.copy(snapOn.object3D.getWorldScale());
     // Move slightly to avoid texture tearing
     toSnap.el.object3D.translateZ(0.002);
+    // Make snap target invisible
+    this.currentSnapTarget.object3DMap.mesh.material.opacity = 0;
   },
   getClosestSnapObject() {
     // Get the media object, not necessary since it's just "this.el"
-    var mediaObject = this.el;
-    var closestObject = this.snapobjects[0];
+    const mediaObject = this.el;
+    let closestObject = this.snapobjects[0];
     for (let snapobject of this.snapobjects) {
       if (
         mediaObject.object3D.getWorldPosition().distanceTo(snapobject.object3D.getWorldPosition()) <
@@ -116,7 +118,7 @@ AFRAME.registerComponent("floaty-object", {
         // Check that there are any snap-objects in the environment
         if (this.snapobjects.length > 0) {
           // Get the closest snap object
-          var closestObject = this.getClosestSnapObject();
+          const closestObject = this.getClosestSnapObject();
           // Check if close enough to snap
           if (this.snapTargetWithinRange(closestObject)) {
             this.updateSnapTarget(closestObject);
@@ -149,7 +151,7 @@ AFRAME.registerComponent("floaty-object", {
         // Check if there are any snap objects in the scene
         if (this.snapobjects.length > 0) {
           // Get the closest snap object
-          var closestObject = this.getClosestSnapObject();
+          const closestObject = this.getClosestSnapObject();
           // If the closest object is close enough
           if (this.snapTargetWithinRange(closestObject)) {
             // Snap onto it
@@ -225,6 +227,7 @@ AFRAME.registerComponent("floaty-object", {
     if (this.data.modifyGravityOnRelease) {
       const uuid = this.bodyHelper.uuid;
       const physicsSystem = this.el.sceneEl.systems["hubs-systems"].physicsSystem;
+
       if (
         this.data.gravitySpeedLimit === 0 ||
         (physicsSystem.bodyInitialized(uuid) && physicsSystem.getLinearVelocity(uuid) < this.data.gravitySpeedLimit)
@@ -262,21 +265,11 @@ AFRAME.registerComponent("floaty-object", {
   },
 
   onGrab() {
-    var isDesk = false;
-    if (this.el.components["media-loader"] != null && this.el.components["media-loader"].data.objectType != null) {
-      if (this.el.components["media-loader"].data.objectType == "Interactive_Desk") {
-        isDesk = true;
-        console.log("DESK1");
-      }
-    }
-    if (!isDesk) {
-      console.log("DESK");
-      this.el.setAttribute("body-helper", {
-        gravity: { x: 0, y: 0, z: 0 },
-        collisionFilterMask: COLLISION_LAYERS.HANDS
-      });
-      this.setLocked(false);
-    }
+    this.el.setAttribute("body-helper", {
+      gravity: { x: 0, y: 0, z: 0 },
+      collisionFilterMask: COLLISION_LAYERS.HANDS
+    });
+    this.setLocked(false);
   },
 
   remove() {

@@ -736,8 +736,7 @@ export const oculusTouchUserBindings = addSetsToBindings({
         value: rightButton("b").pressed
       },
       dest: { value: paths.actions.raiseNearestDesk },
-      xform: xforms.value,
-      priority: 2
+      xform: xforms.value
     },
     {
       src: {
@@ -745,8 +744,7 @@ export const oculusTouchUserBindings = addSetsToBindings({
         value: rightButton("a").pressed
       },
       dest: { value: paths.actions.lowerNearestDesk },
-      xform: xforms.value,
-      priority: 2
+      xform: xforms.value
     }
     //---------------------------------------------------------------------------------------------------------
     // |                                             End Custom                                               |

@@ -147,14 +147,14 @@ export class CharacterControllerSystem {
   // ------------------ CUSTOM CODE -------------------------------------------
   distanceToDesk = function(character_pos, desk) {
     // euclidean distance along x and z axis
-    var desk_pos = desk.getWorldPosition();
-    var x_distance = character_pos.x - desk_pos.x;
-    var z_distance = character_pos.z - desk_pos.z;
+    const desk_pos = desk.getWorldPosition();
+    const x_distance = character_pos.x - desk_pos.x;
+    const z_distance = character_pos.z - desk_pos.z;
     return Math.sqrt(x_distance * x_distance + z_distance * z_distance);
   };
   getClosestDesk = function(avatarPos, deskList) {
     // Sort the interactable desks by euclidean distance
-    var sorted_interactable_desks = deskList.sort(function(a, b) {
+    const sorted_interactable_desks = deskList.sort(function(a, b) {
       return (
         Math.sqrt(
           Math.pow(avatarPos.x - a.object3D.getWorldPosition().x, 2) +
@@ -373,7 +373,7 @@ export class CharacterControllerSystem {
       }
 
       // ------------------------------------------CUSTOM------------------------------------
-      var avatarRig = document.querySelector("#avatar-rig");
+      const avatarRig = document.querySelector("#avatar-rig");
       // Chech if controller is put on
       if (
         Math.abs(avatarRig.querySelector("#player-left-controller").object3D.rotation.z) > 3 &&
@@ -388,7 +388,7 @@ export class CharacterControllerSystem {
       // Get the floaty objects
       const floaty_objects = AFRAME.scenes[0].querySelectorAll("[floaty-object]");
       // Initiate the list of interactable desks
-      var interactable_desks = [];
+      const interactable_desks = [];
       // Extract the interactable desks from the list of floaty objects
       for (let floaty_obj of floaty_objects) {
         if (
@@ -397,7 +397,7 @@ export class CharacterControllerSystem {
         ) {
           if (floaty_obj.components["media-loader"].data.objectType == "Interactive_Desk") {
             if (floaty_obj.invisible_desk == null) {
-              var scene_objects = AFRAME.scenes[0].querySelectorAll("[class]");
+              const scene_objects = AFRAME.scenes[0].querySelectorAll("[class]");
               for (let e of scene_objects) {
                 if (e.object3D != null) {
                   if (e.object3D.name == floaty_obj.components["media-loader"].data.invisibleDeskName) {
@@ -410,17 +410,17 @@ export class CharacterControllerSystem {
           }
         }
       }
-      var closestDesk = null;
+      let closestDesk = null;
       if (this.controllerDeskCounter > 200 || this.deskTrackController) {
         this.controllerDeskCounter = 0;
         // Get avatar position
-        var avatarPos = avatarRig.object3D.getWorldPosition();
+        const avatarPos = avatarRig.object3D.getWorldPosition();
         // Get the closest desk
 
         closestDesk = this.getClosestDesk(avatarPos, interactable_desks);
         // Get the position of the left avatar controller
 
-        var avatarLeftControllerPos = Object.assign(
+        let avatarLeftControllerPos = Object.assign(
           {},
           avatarRig.querySelector("#player-left-controller").object3D.getWorldPosition()
         );
@@ -438,7 +438,7 @@ export class CharacterControllerSystem {
             if (!mine) {
               NAF.utils.takeOwnership(closestDesk);
             }
-            var difference = avatarLeftControllerPos.y - closestDesk.object3D.getWorldPosition().y;
+            let difference = avatarLeftControllerPos.y - closestDesk.object3D.getWorldPosition().y;
 
             while (Math.abs(difference) > 0.001) {
               //Change the height of the desk until aligned with controller
@@ -453,7 +453,7 @@ export class CharacterControllerSystem {
       // If user wants to raise desk
       if (userinput.get("/actions/raiseNearestDesk")) {
         // Get avatar position
-        var avatarPos = this.avatarRig.object3D.getWorldPosition();
+        const avatarPos = this.avatarRig.object3D.getWorldPosition();
         // Get the closest desk
         closestDesk = this.getClosestDesk(avatarPos, interactable_desks);
 
@@ -476,7 +476,7 @@ export class CharacterControllerSystem {
       // If user wants to lower desk
       else if (userinput.get("/actions/lowerNearestDesk")) {
         // Get avatar position
-        var avatarPos = this.avatarRig.object3D.getWorldPosition();
+        const avatarPos = this.avatarRig.object3D.getWorldPosition();
         // Get the closest desk
         closestDesk = this.getClosestDesk(avatarPos, interactable_desks);
         // Only lower desk if user is close enough
@@ -496,7 +496,7 @@ export class CharacterControllerSystem {
         }
       }
 
-      var floaty_objs = document.querySelectorAll("[floaty-object]");
+      let floaty_objs = document.querySelectorAll("[floaty-object]");
 
       floaty_objs.forEach(floaty_obj => {
         if (floaty_obj.object3D != null) {

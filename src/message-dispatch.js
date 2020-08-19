@@ -181,6 +181,58 @@ export default class MessageDispatch {
         break;
       }
       // --------------------------------------------------------------------------------------------------------------------
+      // -----------------------------------------CUSTOM CODE TO LET ONE SEE DISTANCE TO SHARED SCREENS----------------------
+      case "distanceToScreen":
+        const media_loaders = AFRAME.scenes[0].querySelectorAll("[media-video]");
+        let selectedScreen = null;
+        let selectedAvatar = avatarRig;
+
+        // If user desires to get distance between another user and their screen
+        if (args[0]) {
+          selectedAvatar = getAvatarFromName(args[0]);
+          if (selectedAvatar == null) {
+            this.addToPresenceLog({
+              type: "log",
+              body: "Could not find player named: ".concat(args[0])
+            });
+            break;
+          }
+          for (let media_loader of media_loaders) {
+            // Find the screen belonging to the user
+            const creatorID = NAF.utils.getCreator(media_loader);
+            if (selectedAvatar.components["player-info"].playerSessionId === creatorID) {
+              selectedScreen = media_loader;
+            }
+          }
+        }
+        // If user desires to get distance to their own screen
+        else {
+          for (let media_loader of media_loaders) {
+            const creatorID = NAF.utils.getCreator(media_loader);
+            if (selectedAvatar.components["player-info"].playerSessionId === creatorID) {
+              selectedScreen = media_loader;
+            }
+          }
+        }
+        if (selectedScreen == null || selectedAvatar == null) break;
+        // To get the correnct height, use the camera of the user
+        let selecterAvatarCamera;
+        for (let child of selectedAvatar.getChildren()) {
+          if (child.className == "camera") selecterAvatarCamera = child;
+        }
+        // Calculate the distance and turn it into centimeters
+        let distance = selecterAvatarCamera.object3D
+          .getWorldPosition()
+          .distanceTo(selectedScreen.object3D.getWorldPosition());
+        distance = Math.round(distance * 100);
+
+        this.addToPresenceLog({
+          type: "log",
+          body: "Distance: ".concat(distance).concat(" cm")
+        });
+        break;
+
+      // -------------------------------------------------------------------------------------------------------------------
       case "grow":
         for (let i = 0; i < scales.length; i++) {
           if (scales[i] > curScale.x) {
