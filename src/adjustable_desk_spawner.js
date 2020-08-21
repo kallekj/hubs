@@ -7,10 +7,10 @@ export class AdjustableDeskSpawner {
   init = () => {
     this.deskURLs = {
       b5: "https://uploads-prod.reticulum.io/files/ae0a49d5-4fa5-4087-a572-a104c470a320.glb",
-      "eow-c": "https://uploads-prod.reticulum.io/files/09a3d5f6-8e7d-4cd3-b243-76bcc391a710.glb"
+      "eow-c": "https://uploads-prod.reticulum.io/files/bc45839f-eb4b-4ff4-967f-04f33262ba79.glb"
     };
   };
-
+  //"https://uploads-prod.reticulum.io/files/09a3d5f6-8e7d-4cd3-b243-76bcc391a710.glb"
   loadAssetFromURL = (url, position) => {
     const el = document.createElement("a-entity");
     AFRAME.scenes[0].appendChild(el);
@@ -165,7 +165,7 @@ export class AdjustableDeskSpawner {
       "https://uploads-prod.reticulum.io/files/dffdc170-2336-41ac-ab2c-876d6ffc227f.png",
       "https://uploads-prod.reticulum.io/files/b90815c5-838e-4eac-9aed-fdd07891681c.png",
       "https://uploads-prod.reticulum.io/files/b2be34b4-4287-4efa-8225-be0af3036eec.png",
-      "https://uploads-prod.reticulum.io/files/dffdc170-2336-41ac-ab2c-876d6ffc227f.png"
+      "https://uploads-prod.reticulum.io/files/79921f6c-28e3-43e6-a235-4af7d115687d.png"
     ];
     const tempURL = "https://uploads-prod.reticulum.io/files/f1e8b354-6c4d-4b3a-b812-31a3571bf58d.png";
 
@@ -331,7 +331,6 @@ export class AdjustableDeskSpawner {
           if (desk.components["media-loader"].data.deskType.toLowerCase() == "eow-c") {
             desk.object3D.translateX(0.08);
             desk.object3D.translateZ(0.21);
-            
           }
 
           desk.updateComponent("body-helper", { collisionFilterMask: 0 });
