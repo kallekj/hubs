@@ -13,7 +13,7 @@ export default class ChatCommandHelp extends Component {
   // CUSTOM ADDED commands : "height", "spawnImage", "distanceToScreen"
   // Removed : "debug","vrstats","rename <new name>","audiomode"
   render() {
-    const commands = ["height", "distanceToScreen", "spawnImage", "leave"];
+    const commands = ["height", "distancetoscreen", "spawnimage", "leave"];
 
     /* if (window.APP.hubChannel && window.APP.hubChannel.can("fly")) {
       commands.push("fly");

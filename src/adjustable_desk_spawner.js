@@ -160,7 +160,7 @@ export class AdjustableDeskSpawner {
 
   spawnSnapScreens = async desk => {
     const Eow_cImageURLs = [
-      "https://uploads-prod.reticulum.io/files/8b5e4d89-a7d6-43d7-af89-8347630196cd.png",
+      "https://uploads-prod.reticulum.io/files/08aef25d-8938-4ae3-b423-2ef842a848fa.png",
       "https://uploads-prod.reticulum.io/files/8b5e4d89-a7d6-43d7-af89-8347630196cd.png",
       "https://uploads-prod.reticulum.io/files/dffdc170-2336-41ac-ab2c-876d6ffc227f.png",
       "https://uploads-prod.reticulum.io/files/b90815c5-838e-4eac-9aed-fdd07891681c.png",
@@ -178,6 +178,7 @@ export class AdjustableDeskSpawner {
 
       snapObjectOffsets.forEach(snapOffset => {
         let snapObject;
+        //Check if desk is of type eow-c or b6
         if (desk.components["media-loader"].data.deskType.toLowerCase() != "eow-c") {
           snapObject = this.loadAssetFromURL(tempURL, deskPosition);
         } else {

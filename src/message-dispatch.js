@@ -2,9 +2,9 @@ import "./utils/configs";
 import { getAbsoluteHref } from "./utils/media-url-utils";
 import { isValidSceneUrl } from "./utils/scene-url-utils";
 import { messages } from "./utils/i18n";
-import { spawnChatMessage } from "./react-components/chat-message";
 import { SOUND_QUACK, SOUND_SPECIAL_QUACK } from "./systems/sound-effects-system";
 import ducky from "./assets/models/DuckyMesh.glb";
+import { spawnChatMessage, createInWorldLogMessage } from "./react-components/chat-message";
 
 let uiRoot;
 // Handles user-entered messages
@@ -146,7 +146,7 @@ export default class MessageDispatch {
         }
         break;
       // ------------------------------ CUSTOM CODE TO SPAWN IMAGE FROM CHAT ------------------------------------------------
-      case "spawnImage": {
+      case "spawnimage": {
         let url, username, theAvatar, theAvatarPOV;
         if (args[0]) {
           url = args[0];
@@ -180,11 +180,11 @@ export default class MessageDispatch {
       }
       // --------------------------------------------------------------------------------------------------------------------
       // -----------------------------------------CUSTOM CODE TO LET ONE SEE DISTANCE TO SHARED SCREENS----------------------
-      case "distanceToScreen":
+      case "distancetoscreen":
         const media_loaders = AFRAME.scenes[0].querySelectorAll("[media-video]");
         let selectedScreen = null;
         let selectedAvatar = avatarRig;
-
+        let selectedAvatarName = "";
         // If user desires to get distance between another user and their screen
         if (args[0]) {
           selectedAvatar = getAvatarFromName(args[0]);
@@ -202,6 +202,7 @@ export default class MessageDispatch {
               selectedScreen = media_loader;
             }
           }
+          selectedAvatarName = " for ".concat(selectedAvatar.components["player-info"].displayName);
         }
         // If user desires to get distance to their own screen
         else {
@@ -223,11 +224,14 @@ export default class MessageDispatch {
           .getWorldPosition()
           .distanceTo(selectedScreen.object3D.getWorldPosition());
         distance = Math.round(distance * 100);
+        this.hubChannel.sendMessage(
+          "Distance"
+            .concat(selectedAvatarName)
+            .concat(": ")
+            .concat(distance)
+            .concat(" cm")
+        );
 
-        this.addToPresenceLog({
-          type: "log",
-          body: "Distance: ".concat(distance).concat(" cm")
-        });
         break;
 
       // -------------------------------------------------------------------------------------------------------------------
