@@ -24,15 +24,15 @@ export class AdjustableDeskSpawner {
     // Spawn the desk and position it
     const g = AFRAME.scenes[0].querySelectorAll("[class]");
     const deskGroups = [];
-    for (let e of g) {
+    for (const e of g) {
       if (e.className.substring(0, 10) == "Desk_Group") {
         deskGroups.push(e);
       }
     }
     const desks = [];
     const targets = [];
-    for (let deskGroup of deskGroups) {
-      for (let deskGroupChild of deskGroup.object3D.children) {
+    for (const deskGroup of deskGroups) {
+      for (const deskGroupChild of deskGroup.object3D.children) {
         // Find the invisible desks to link with
         if (deskGroupChild.name.substring(0, 14) == "Invisible_Desk") {
           const deskType = deskGroupChild.name.substring(15, deskGroupChild.name.length - 2);
@@ -250,7 +250,7 @@ export class AdjustableDeskSpawner {
     const invisible_desks = [];
     let desksAlreadySpawned = false;
     // Get the invisible desks of the scene
-    for (let e of scene_objects) {
+    for (const e of scene_objects) {
       if (e.object3D != null) {
         if (e.object3D.name.substring(0, 14) == "Invisible_Desk") {
           invisible_desks.push(e);
@@ -259,12 +259,12 @@ export class AdjustableDeskSpawner {
     }
     // Determine if interactive desks already are spawned
     const interactive_desks = [];
-    for (let floaty_object of floaty_objects) {
+    for (const floaty_object of floaty_objects) {
       if (floaty_object.components["media-loader"] != null) {
         if (floaty_object.components["media-loader"].data.objectType == "Interactive_Desk") {
           desksAlreadySpawned = true;
           // If desks are spawned, find the corresponding invisible desk and link them together
-          for (let inv_desk of invisible_desks) {
+          for (const inv_desk of invisible_desks) {
             if (inv_desk.object3D.name == floaty_object.components["media-loader"].data.invisibleDeskName) {
               floaty_object.invisible_desk = inv_desk;
               floaty_object.object3D.name = "Interactive_Desk".concat(
@@ -284,7 +284,7 @@ export class AdjustableDeskSpawner {
 
     if (desksAlreadySpawned) {
       // Find the snap objects
-      for (let floaty_object of floaty_objects) {
+      for (const floaty_object of floaty_objects) {
         if (floaty_object.object3D != null) {
           if (floaty_object.components["media-loader"].data.objectType == "SnapObject") {
             // Give correct object3D name and make not draggable
@@ -294,7 +294,7 @@ export class AdjustableDeskSpawner {
             floaty_object.removeAttribute("is-remote-hover-target");
 
             // Find the corresponding interactive desk of the snap object
-            for (let desk of interactive_desks) {
+            for (const desk of interactive_desks) {
               if (
                 desk.components["media-loader"].data.deskName == floaty_object.components["media-loader"].data.deskName
               ) {
