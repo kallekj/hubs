@@ -374,7 +374,7 @@ export class CharacterControllerSystem {
 
       // ------------------------------------------CUSTOM------------------------------------
       const avatarRig = document.querySelector("#avatar-rig");
-      // Chech if controller is put on
+      // Check if controller is put on desk correctly
       if (
         Math.abs(avatarRig.querySelector("#player-left-controller").object3D.rotation.z) > 3 &&
         avatarRig.querySelector("#player-left-controller").object3D.rotation.x < 0
